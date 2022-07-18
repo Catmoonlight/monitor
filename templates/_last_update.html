@@ -1,0 +1,8 @@
+<p class="fst-italic">
+{% load tz %}
+{% if last_update %}
+{% localtime on %} Последнее обновление: {{ monitor.last_update|date:"j b, H:i:s" }}{% endlocaltime %}
+{% else %}
+<span class="fw-bold">Обновлений еще не было</span>
+{% endif %}
+</p>

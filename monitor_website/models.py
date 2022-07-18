@@ -6,23 +6,21 @@ from django.urls import reverse
 class Monitor(models.Model):
     group = models.CharField(max_length=20, blank=True, verbose_name="Код группы")
     human_name = models.CharField(max_length=50, blank=True)
-    is_old = models.BooleanField(default=False)  # no functional
+    is_old = models.BooleanField(default=False)
     is_hidden = models.BooleanField(default=True)
-    allow_ghosts = models.BooleanField(default=True)
+    default_ghosts = models.BooleanField(default=True)
 
     def get_absolute_url(self):
-        return reverse('main:monitor', kwargs={"monitor_name": self.name})
+        return reverse('main:monitor', kwargs={"monitor_id": self.pk})
 
     def last_update(self):
         mn = None
         for contest in self.contest_set.all():
             if contest.last_status_update is None:
-                return "N / A"
+                return None
             if mn is None:
                 mn = contest.last_status_update
             mn = min(mn, contest.last_status_update)
-        if mn is None:
-            return "N / A"
         return mn
 
 
@@ -31,13 +29,10 @@ class Personality(models.Model):
     nickname = models.CharField(max_length=50)
     real_name = models.CharField(max_length=50, blank=True)
     is_blacklisted = models.BooleanField(default=False)
-    is_ghost = models.BooleanField(default=True)
 
     def get_name(self):
         name = f"{self.real_name} ({self.nickname})" if self.real_name else f"{self.nickname}"
-        if self.is_ghost:
-            return f"👻 {name}"
-        elif self.is_blacklisted:
+        if self.is_blacklisted:
             return f"🚫 {name}"
         return name
 
@@ -72,14 +67,12 @@ class Submit(models.Model):
 
     OK = "OK"
     NOT_OK = "NOT_OK"
-    TESTING = "TESTING"
 
     verdict = models.CharField(
         max_length=10,
         choices=(
             (OK, "OK"),
             (NOT_OK, "Не зачтено"),
-            (TESTING, "Тестируется")
         )
     )
 
@@ -91,10 +84,22 @@ class Contest(models.Model):
     cf_contest = models.CharField(max_length=20, unique=True, verbose_name="Номер контеста")
     human_name = models.TextField(blank=True)
     monitor = models.ForeignKey(Monitor, on_delete=models.CASCADE)
-    last_status_update = models.DateTimeField(null=True)  # second priority
+    last_status_update = models.DateTimeField(null=True)
     last_comment = models.TextField(blank=True)
-    is_fresh = models.BooleanField(default=True)  # first priority
-    has_errors = models.BooleanField(default=False)
+
+    FRESH = 'FRESH'
+    NORMAL = 'OK'
+    ERROR = 'ERROR'
+
+    status = models.CharField(
+        max_length=10,
+        choices=(
+            (FRESH, "Только что создан"),
+            (NORMAL, "OK"),
+            (ERROR, "Ошибка!")
+        ),
+        default=FRESH
+    )
 
     def get_name(self):
         if self.human_name:
@@ -103,4 +108,9 @@ class Contest(models.Model):
 
     def get_cf_url(self):
         return f"https://codeforces.com/group/{self.monitor.group}/contest/{self.cf_contest}"
+
+    def set_error(self, comment):
+        self.status = self.ERROR
+        self.last_comment = comment
+        self.save()
 

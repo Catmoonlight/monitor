@@ -22,12 +22,12 @@ class NewMonitorView(CreateView):
         return context
 
 
-def monitor_page(request: http.HttpRequest, monitor_name):
+def monitor_page(request: http.HttpRequest, monitor_id):
     CodeforcesWorker()
-    monitor = get_object_or_404(models.Monitor, name=monitor_name)
+    monitor = get_object_or_404(models.Monitor, pk=monitor_id)
 
     results = {}
-    for person in monitor.personality_set.all():
+    for person in monitor.personality_set.filter(is_blacklisted=False).all():
         results[person] = []
         for contest in monitor.contest_set.all():
             for problem in contest.problem_set.all():
@@ -52,12 +52,12 @@ def monitor_page(request: http.HttpRequest, monitor_name):
     })
 
 
-def monitor_edit(request: http.HttpRequest, monitor_name):
+def monitor_edit(request: http.HttpRequest, monitor_id):
     if not request.user.is_authenticated:
         raise http.Http404()
 
     CodeforcesWorker()
-    monitor = get_object_or_404(models.Monitor, name=monitor_name)
+    monitor = get_object_or_404(models.Monitor, pk=monitor_id)
     contests = monitor.contest_set.all()
 
     create_contest_form = forms.CreateContestForm()
@@ -70,12 +70,17 @@ def monitor_edit(request: http.HttpRequest, monitor_name):
         if q_type == 'delete_monitor':
             monitor.delete()
             return redirect('main:home')
+        # monitor settings
         elif q_type == 'show':
             monitor.is_hidden = not ('is_set' in post and post['is_set'] == 'on')
             monitor.save()
-        elif q_type == 'ghosts':
-            monitor.allow_ghosts = 'is_set' in post and post['is_set'] == 'on'
+        elif q_type == 'worker':
+            monitor.is_old = not ('is_set' in post and post['is_set'] == 'on')
             monitor.save()
+        elif q_type == "ghosts":
+            monitor.default_ghosts = 'is_set' in post and post['is_set'] == 'on'
+            monitor.save()
+        # contests
         elif q_type == 'create':
             create_contest_form = forms.CreateContestForm(post)
             if create_contest_form.is_valid():
@@ -96,21 +101,25 @@ def monitor_edit(request: http.HttpRequest, monitor_name):
         elif q_type == 'refresh':
             cf_contest = post['cf_contest']
             contest = get_object_or_404(models.Contest, cf_contest=cf_contest, monitor=monitor)
-            contest.is_fresh = True
+            contest.status = contest.FRESH
+            contest.problem_set.all().delete()
+            contest.last_status_update = None
             contest.save()
+        # pers
         elif q_type == 'update_pers':
-            person = models.Personality.objects.get(monitor=monitor, nickname=post['nickname'])
-            person.real_name = post['real_name']
-            person.is_blacklisted = 'is_blacklisted' in post and post['is_blacklisted'] == 'on'
-            person.is_ghost = 'is_ghost' in post and post['is_ghost'] == 'on'
-            person.save()
+            for person in models.Personality.objects.filter(monitor=monitor).all():
+                if f'{person.nickname}_real_name' not in post:
+                    continue
+                person.real_name = post[f'{person.nickname}_real_name']
+                person.is_blacklisted = f'{person.nickname}_is_blacklisted' in post and post[f'{person.nickname}_is_blacklisted'] == 'on'
+                person.save()
 
     return render(request, "monitor_edit.html", {
         'title': f"Редактирование {monitor.human_name}",
         'monitor': monitor,
         'contests': contests,
         'creation_form': create_contest_form,
-        'personals': monitor.personality_set.order_by('nickname').all()
+        'personals': sorted(list(monitor.personality_set.all()), key=lambda x: x.nickname.lower())
     })
 
 

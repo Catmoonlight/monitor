@@ -64,13 +64,9 @@ class CodeforcesWorker:
                 return None
 
             if 'comment' in status:
-                contest.last_comment = status['comment']
+                contest.set_error(status['comment'])
             else:
-                contest.last_comment = 'Неизвестная проблема'
-
-            contest.is_fresh = False
-            contest.has_errors = True
-            contest.save()
+                contest.set_error('Неизвестная проблема')
             return None
 
         contest.last_comment = ''
@@ -108,7 +104,10 @@ class CodeforcesWorker:
 
             personality, _ = models.Personality.objects.get_or_create(
                 monitor=contest.monitor,
-                nickname=submission['author']['members'][0]['handle']
+                nickname=submission['author']['members'][0]['handle'],
+                defaults={
+                    'is_blacklisted': contest.monitor.default_ghosts
+                }
             )
 
             models.Submit.objects.update_or_create(
@@ -141,23 +140,26 @@ class CodeforcesWorker:
                 contest=contest
             )
 
-        contest.is_fresh = False
+        if not contest.human_name:
+            contest.human_name = result['contest']['name']
+
+        contest.status = contest.NORMAL
         contest.last_status_update = None
         contest.last_comment = ''
-        contest.has_errors = False
         contest.save()
         print('Done!\n')
 
     def start(self):
         while self._iters > 0:
             try:
-                fresh_contests = models.Contest.objects.filter(is_fresh=True).all()
-                if fresh_contests.exists():
-                    contest = fresh_contests.first()
+                contests_q = models.Contest.objects.filter(monitor__is_old=False)
+                if contests_q.filter(status=models.Contest.FRESH).exists():
+                    contest = contests_q.filter(status=models.Contest.FRESH).first()
                     print(f"Init... {contest.human_name}")
                     self._init_contest(contest)
-                elif models.Contest.objects.filter(has_errors=False).exists():
-                    contest = models.Contest.objects.filter(has_errors=False).order_by('last_status_update').first()
+                elif contests_q.filter(status=models.Contest.NORMAL).exists():
+                    contest = models.Contest.objects.filter(status=models.Contest.NORMAL)\
+                        .order_by('last_status_update').first()
                     print(f"Update... {contest.human_name}")
                     self._update_contest(contest)
                 else:

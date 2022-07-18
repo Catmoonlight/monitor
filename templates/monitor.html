@@ -1,14 +1,18 @@
 {% extends 'base.html' %}
 {% block main_content %}
 
-<H1>{{ monitor.human_name }}</H1>
+<H1>{% if monitor.is_hidden %}
+    <span class="text-muted">{{ monitor.human_name }} (скрыт) </span>
+    {% else %}
+    {{ monitor.human_name }}
+{% endif %}</H1>
 <p><a href="{% url 'main:home' %}" class="link-secondary text-decoration-none"> &#8617; Вернуться к списку </a>
 {% if user.is_authenticated %}
-    <br><a href="{% url 'main:monitor_edit' monitor_name=monitor.name %}" class="link-secondary text-decoration-none"> &#9874; Редактировать </a>
+    <br><a href="{% url 'main:monitor_edit' monitor_id=monitor.pk %}" class="link-secondary text-decoration-none"> &#9874; Редактировать </a>
 {% endif %}
 </p>
-{% load tz %}
-<p class="fst-italic">{% localtime on %}Обновлен: {{ monitor.last_update|date:"j b, H:i:s" }}{% endlocaltime %}</p>
+
+{% include '_last_update.html' with last_update=monitor.last_update %}
 
 <div class="px-md-3 py-2">
 <div class="table-responsive">
