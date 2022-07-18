@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% block main_content %}
+<H1>Редактирование &laquo;{{ monitor.human_name }}&raquo; </H1>
+<p>
+    <a href="{% url 'main:monitor' monitor_name=monitor.name %}" class="link-secondary text-decoration-none"> &#8617; Выйти из редактирования </a>
+    <br>
+    <a href="{% url 'main:monitor_edit' monitor_name=monitor.name %}" class="link-secondary text-decoration-none"> &#128260; Перезагрузить </a>
+</p>
+<p class="fst-italic">Монитор настроен на группу {{ monitor.group }}<br>
+{% load tz %}
+{% localtime on %}Обновлен: {{ monitor.last_update|date:"j b, H:i:s" }}{% endlocaltime %}</p>
+
+<form method="post" class="row">
+{% csrf_token %}
+<input type="hidden" name="query_type" value="show">
+<label class="col-2 fw-bold" for="show_contest">Монитор публичный?</label>
+<div class="col-1"><input type="checkbox" onclick="this.form.submit()" id="show_contest" class="form-check-input"
+       name="is_set" {% if not monitor.is_hidden %}checked{% endif %}></div>
+</form>
+<form method="post" class="row pb-3">
+{% csrf_token %}
+<input type="hidden" name="query_type" value="ghosts">
+<label class="col-2 fw-bold" for="show_contest">Разрешить анонимов?</label>
+<div class="col-1"><input type="checkbox" onclick="this.form.submit()" id="show_contest" class="form-check-input"
+       name="is_set" {% if monitor.allow_ghosts %}checked{% endif %}></div>
+</form>
+
+    <div class="accordion col-lg-8" id="participants">
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="headingP">
+      <button class="accordion-button collapsed btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseP" aria-expanded="false" aria-controls="collapseP">
+          Участники
+      </button>
+    </h2>
+    <div id="collapseP" class="accordion-collapse collapse{% if creation_form.errors %} show{% endif %}" aria-labelledby="headingP" data-bs-parent="#participants">
+      <div class="accordion-body table-responsive">
+
+          <table class="table table-bordered table-sm">
+              <tr>
+                  <th class="align-middle text-center">Ник</th>
+                  <th class="align-middle text-center">Имя</th>
+                  <th class="align-middle text-center">&#128683;</th>
+                  <th class="align-middle text-center">&#128123;</th>
+                  <th style="width: 1cm"></th>
+              </tr>
+              {% for pers in personals %}
+              <tr>
+              <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="query_type" value="update_pers">
+                <input type="hidden" name="nickname" value="{{ pers.nickname }}">
+                <td class="align-middle text-center"> {{ pers.nickname }} </td>
+                <td class="align-middle text-center"> <input type="text" name="real_name"
+                 value="{{ pers.real_name }}" class="form-control"></td>
+                <td class="align-middle text-center"> <input type="checkbox" class="form-check-input"
+                 name="is_blacklisted" aria-label="is blacklisted?" {% if pers.is_blacklisted %}checked{% endif %}></td>
+                <td class="align-middle text-center"> <input type="checkbox" class="form-check-input"
+                 name="is_ghost" aria-label="is ghost?" {% if pers.is_ghost %}checked{% endif %}></td>
+                <td><button type="submit" class="btn btn-outline-success">ОК</button></td>
+              </form>
+              </tr>
+              {% endfor %}
+
+          </table>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+    <p></p>
+
+<div class="accordion col-lg-8" id="contestsAcc">
+{% for contest in contests %}
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="heading{{ contest.cf_contest }}">
+      <button class="accordion-button {% if contest.has_errors %} bg-warning text-black {% endif %} collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ contest.cf_contest }}" aria-expanded="false" aria-controls="collapse{{ contest.cf_contest }}">
+          {{ contest.get_name }}
+      </button>
+    </h2>
+    <div id="collapse{{ contest.cf_contest }}" class="accordion-collapse collapse" aria-labelledby="heading{{ contest.cf_contest }}" data-bs-parent="#contestsAcc">
+      <div class="accordion-body">
+        {% if contest.is_fresh %}
+        <p class="fst-italic"> Данные контеста еще не загружены </p>
+        {% else %}
+
+        <p class="fst-italic">{% localtime on %}Обновлен: {{ contest.last_status_update|date:"j b, H:i:s" }}{% endlocaltime %}</p>
+
+        <form method="post" class="py-1">
+            {% csrf_token %}
+            <input type="hidden" name="query_type" value="refresh">
+            <input type="hidden" name="cf_contest" value="{{ contest.cf_contest }}">
+            <button type="submit" class="btn btn-outline-primary">Пересобрать</button>
+        </form>
+        {% endif %}
+
+      {% if contest.last_comment %}
+        <p class="text-danger">{{ contest.last_comment }}</p>
+      {% endif %}
+      {% if contest.problem_set.exists %}
+      <p class="py-2">Задачи:</p>
+
+        <ul class="list-group">
+            {% for problem in contest.problem_set.all %}
+                <li class="list-group-item">{{ problem.index }}. {{ problem.name }}</li>
+            {% endfor %}
+        </ul>
+      {% endif %}
+
+          <form method="post" class="pt-2">
+            {% csrf_token %}
+            <input type="hidden" name="query_type" value="delete">
+              <input type="hidden" name="cf_contest" value="{{ contest.cf_contest }}">
+            <button type="submit" class="btn btn-outline-danger" onclick="if (! confirm('Уверен?')) { return false; }">Удалить</button>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+</div>
+
+<p></p>
+
+<div class="accordion col-lg-8" id="contestsAdd">
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="headingAdd">
+      <button class="accordion-button {% if creation_form.errors %} bg-warning text-black {% else %} collapsed btn btn-primary {% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAdd" aria-expanded="false" aria-controls="collapseAdd">
+          Добавить контест
+      </button>
+    </h2>
+    <div id="collapseAdd" class="accordion-collapse collapse{% if creation_form.errors %} show{% endif %}" aria-labelledby="headingAdd" data-bs-parent="#contestsAdd">
+      <form class="accordion-body" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="query_type" value="create">
+        {% for f in creation_form %}
+          <div class="row py-2">
+              <label class="col-md-3 col-form-label" for="{{ f.id_for_label }}"> {{ f.label }}: </label>
+              <div class="col-md-8">
+                  {{ f }}
+              </div>
+          </div>
+            <div class="text-danger">{{ f.errors }}</div>
+        {% endfor %}
+        <button type="submit" class="btn btn-outline-primary pt-2">Создать</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<form method="post" class="py-3">
+{% csrf_token %}
+<input type="hidden" name="query_type" value="delete_monitor">
+<button type="submit" class="btn btn-outline-danger" onclick="if (! confirm('Уверен?')) { return false; }">Удалить монитор</button>
+</form>
+
+{% endblock %}

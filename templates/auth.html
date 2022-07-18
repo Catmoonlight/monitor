@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block main_content %}
+<H1>Авторизация</H1>
+<p><a href="{% url 'main:home' %}" class="link-secondary text-decoration-none"> &#8617; Вернуться на главную </a></p>
+
+    {% if user.is_authenticated  %}
+<div>Вы уже вошли как {{ user.username }}.</div>
+    {% endif %}
+<form method="post">
+    {% csrf_token %}
+    <div class="text-danger">{{ form.non_field_errors }}</div>
+    <div class="py-3">
+    {% for f in form %}
+          <div class="row py-2">
+              <label class="col-md-1 col-form-label" for="{{ f.id_for_label }}"> {{ f.label }}: </label>
+              <div class="col-md-6">
+                  {{ f }}
+              </div>
+          </div>
+        <div class="text-danger">{{ f.errors }}</div>
+    {% endfor %}
+    </div>
+    <button type="submit" class="btn btn-primary">Войти</button>
+</form>
+{% endblock %}

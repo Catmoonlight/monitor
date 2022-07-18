@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block main_content %}
+    <H1>Управление преподами</H1>
+
+    <p><a href="{% url 'main:home' %}" class="link-secondary text-decoration-none"> &#8617; Вернуться на главную </a></p>
+    {% if comment %}<p class="fst-italic text-{{ comment_style }}">{{ comment }}</p>{% endif %}
+
+    <div class="col-md-6 py-1">
+    <table class="table">
+        <tr>
+            <th>Препод</th>
+            <th>Админ?</th>
+            <th>Управление</th>
+        </tr>
+        {% for user in users %}
+            <tr>
+            <td>{{ user.username }}</td>
+            <td>
+            <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="query_type" value="admin">
+            <input type="hidden" name="teacher" value="{{ user.username }}">
+            <input type="checkbox" onclick="this.form.submit()" class="form-check-input"
+                   aria-label="админ ли {{ user.username }}?" name="is_set" {% if user.is_superuser %}checked{% endif %} {% if user.username == 'Catmoonlight' %} disabled {% endif %}>
+            </form>
+            </td>
+            <td>
+            <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="query_type" value="delete">
+            <input type="hidden" name="teacher" value="{{ user.username }}">
+            <button type="submit" class="btn btn-outline-danger" onclick="if (! confirm('Уверен?')) { return false; }" {% if user.username == 'Catmoonlight' %} disabled {% endif %}>Удалить</button>
+            </form>
+            </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <a class="btn btn-primary" href="{% url 'prepods:create' %}" role="button">Создать препода</a>
+
+    </div>
+{% endblock %}
