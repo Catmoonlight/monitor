@@ -14,6 +14,27 @@ from django.db.utils import OperationalError
 class CodeforcesWorker:
     _instance = None
 
+    class Log:
+        def __init__(self, comment, style=""):
+            self.time = timezone.now()
+            self.comment = comment
+            self.style = style
+            CodeforcesWorker.logs.append(self)
+            if len(CodeforcesWorker.logs) > CodeforcesWorker.MAX_LOGS:
+                CodeforcesWorker.logs.pop(0)
+
+    class Status:
+        def __init__(self, contest=None, comment="", style="", percent=100):
+            self.time = timezone.now()
+            self.comment = comment
+            self.contest = contest
+            self.style = style
+            self.percent = percent
+
+    MAX_LOGS = 1000
+    logs = []
+    current_status = Status()
+
     def __new__(cls, *args, **kwargs):
         if not isinstance(cls._instance, cls):
             cls._instance = object.__new__(cls, *args, **kwargs)
@@ -26,7 +47,7 @@ class CodeforcesWorker:
         if not hasattr(self, "_worker") or not self._worker.is_alive():
             self._worker = threading.Thread(target=self.start)
             self._worker.start()
-            print("Worker, wake up!")
+            self.Log('Воркер поднят из мертвых.')
 
     def _get_apisig(self, func_name, params: dict):
         a = sorted([(i, j) for i, j in params.items()])
@@ -49,30 +70,28 @@ class CodeforcesWorker:
             result = requests.get(f"https://codeforces.com/api/{query_name}", params)
         except requests.exceptions.RequestException:
             return {'status': 'C', 'comment': 'Проблема с соединением с codeforces'}
-        return result.json()
+        try:
+            js = result.json()
+            return js
+        except requests.exceptions.RequestsJSONDecodeError:
+            self.Log(f"Не хочет превращаться в json: {result.content}", 'danger')
+            return {'status': 'C', 'comment': 'Непонятная проблема с json'}
 
     def _try_return_result(self, contest: models.Contest, query):
         status = self._get_cf_query(contest.cf_contest, query)
-        contest.last_status_update = timezone.now()
 
         if 'status' not in status or status['status'] != 'OK':
-            print(f'result of {query} query failed because {status["comment"]}')
+            if 'comment' not in status:
+                status['comment'] = "Неизвестная проблема"
 
-            if 'status' in status and status['status'] == 'C':
-                contest.last_comment = status['comment']
-                contest.save()
-                return None
-
-            if 'comment' in status:
-                contest.set_error(status['comment'])
-            else:
-                contest.set_error('Неизвестная проблема')
+            contest.set_error(status['comment'])
+            self.Log(f'Метод {query} для контеста {contest.human_name} не сработал: {status["comment"]}')
             return None
 
-        contest.last_comment = ''
-        contest.has_errors = False
-        print(f'result of {query} query completed')
-        contest.save()
+        # contest.last_comment = ''
+        # contest.last_status_update = timezone.now()
+        # contest.has_errors = False
+        # contest.save()
 
         return status['result']
 
@@ -83,10 +102,8 @@ class CodeforcesWorker:
             contest=contest
         )
         if problem_q.count() != 1:
-            contest.last_comment = f"Задача {sumbission_desc['problem']['name']} создана с ошибками."
-            contest.has_errors = True
-            print(f'problems with task {sumbission_desc["problem"]["name"]} query completed')
-            contest.save()
+            contest.set_error(f"Задача {sumbission_desc['problem']['name']} создана с ошибками.")
+            self.Log(f'Ошибка в поиске проблемы {sumbission_desc["problem"]["name"]}', 'danger')
             return None
 
         return problem_q.first()
@@ -97,7 +114,9 @@ class CodeforcesWorker:
             return
         problems = contest.problem_set.all()
 
-        for submission in result:
+        self.Log(f'Найдено {len(result)} посылок для обновления')
+        new = 0
+        for index, submission in enumerate(result):
             problem = self._try_find_problem(contest, problems, submission)
             if problem is None:
                 return
@@ -107,11 +126,11 @@ class CodeforcesWorker:
                     monitor=contest.monitor,
                     nickname=participant['handle'],
                     defaults={
-                        'is_blacklisted': contest.monitor.default_ghosts
+                        'is_blacklisted': True
                     }
                 )
 
-                models.Submit.objects.update_or_create(
+                _, is_new = models.Submit.objects.update_or_create(
                     index=f"{submission['id']}",
                     problem=problem,
                     defaults={
@@ -125,7 +144,15 @@ class CodeforcesWorker:
                         'is_contest': submission['author']['participantType'] == 'CONTESTANT'
                     }
                 )
-        print('Done!\n')
+                if is_new:
+                    new += 1
+            if (index + 1) % 250 == 0:
+                self.Log(f'Обновлено {index + 1}/{len(result)} посылок')
+
+        contest.last_status_update = timezone.now()
+        contest.save()
+
+        self.Log(f'Обновление "{contest.human_name}" ({contest.monitor.human_name}) завершено! Новых посылок: {new}')
 
     def _init_contest(self, contest: models.Contest):
         result = self._try_return_result(contest, 'contest.standings')
@@ -148,7 +175,8 @@ class CodeforcesWorker:
         contest.last_status_update = None
         contest.last_comment = ''
         contest.save()
-        print('Done!\n')
+
+        self.Log(f'Контест {contest.get_name()} инициализирован, найдено {len(contest.problem_set.all())} задач')
 
     def start(self):
         while self._iters > 0:
@@ -156,18 +184,18 @@ class CodeforcesWorker:
                 contests_q = models.Contest.objects.filter(monitor__is_old=False)
                 if contests_q.filter(status=models.Contest.FRESH).exists():
                     contest = contests_q.filter(status=models.Contest.FRESH).first()
-                    print(f"Init... {contest.human_name}")
+                    self.Log(f'Найден контест "{contest.get_name()}" для инициализации')
                     self._init_contest(contest)
                 elif contests_q.filter(status=models.Contest.NORMAL).exists():
                     normals = contests_q.filter(status=models.Contest.NORMAL)
                     contest = normals.filter(last_status_update__isnull=True).first() \
                         if normals.filter(last_status_update__isnull=True).exists() \
                         else normals.order_by('last_status_update').first()
-                    print(f"Update... {contest.human_name}")
+                    self.Log(f'Решено обновить контест "{contest.get_name()}" ({contest.monitor.human_name})')
                     self._update_contest(contest)
                 else:
                     print('relax')
             except OperationalError:
-                print('Fuck! DB died :(')
+                self.Log('База данных умерла', 'danger')
             time.sleep(3)
             self._iters -= 1

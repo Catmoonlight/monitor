@@ -15,11 +15,13 @@
 {% include '_last_update.html' with last_update=monitor.last_update %}
 
 <div class="px-md-3 py-2">
-<div class="table-responsive">
+<div class="table-responsive table-rounded-borders">
+
     <table class="table table-bordered table-sm">
         <tr>
+            <th rowspan="2" class="align-middle text-center"> # </th>
             <th rowspan="2" class="align-middle text-center"> Участник </th>
-            <th rowspan="2" class="align-middle text-center"> Итог </th>
+            <th rowspan="2" class="align-middle text-center"> Итог (/{{ total_problems }}) </th>
             <th rowspan="2" class="align-middle text-center"> Дорешка </th>
             {% for contest in monitor.contest_set.all %}
             <th colspan="{{ contest.problem_set.all|length }}" class="text-center">
@@ -29,20 +31,19 @@
         <tr>
             {% for contest in monitor.contest_set.all %}
                 {% for problem in contest.problem_set.all %}
-                <td class="text-center"><a href="{{ problem.get_cf_url }}" target="_blank" class="link-dark text-decoration-none"
-                data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ problem.name }}">{{ problem.index }}</a></td>
+                <td class="text-center" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ problem.name }}"><a href="{{ problem.get_cf_url }}" target="_blank" class="link-dark text-decoration-none"
+                >{{ problem.index }}</a></td>
                 {% endfor %}
             {% endfor %}
         </tr>
-        {% for personality, results in personalities %}
-            {% if personality.is_ghost and not monitor.allow_ghosts or personality.is_blacklisted %}
-            {% else %}
+        {% for index, personality, results in personalities %}
         <tr>
+            <td class="text-center" style="white-space:nowrap">{{ index }}</td>
             <td class="text-center" style="white-space:nowrap"> {{ personality.get_name }} </td>
             <td class="text-center"> {{ personality.solved }} </td>
-            <td class="text-center"> {{ personality.practiced }} </td>
+            <td class="text-center"> {% if personality.practiced %} +{{ personality.practiced }} {% else %} 0 {% endif %} </td>
 
-            {% for result, link, is_contest in results %}
+            {% for result, link, is_contest, _ in results %}
                 {% if '+' in result %}
                 <td class="text-center {% if is_contest %}table-success {% else %} table-info {% endif %}">
                 <a href="{{ link }}" {% if link != '#' %}target="_blank"{% endif %} class="link-secondary text-decoration-none">
@@ -53,7 +54,6 @@
                 {% endif %}
             {% endfor %}
         </tr>
-            {% endif %}
         {% endfor %}
     </table>
 </div>

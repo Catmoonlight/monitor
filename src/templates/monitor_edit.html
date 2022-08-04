@@ -7,7 +7,7 @@
     <a href="{% url 'main:monitor_edit' monitor_id=monitor.pk %}" class="link-secondary text-decoration-none"> &#128260; Перезагрузить </a>-->
 </p>
 <p>Монитор создан для группы <span class="font-monospace">{{ monitor.group }}</span>.
-    Убедитесь, что пользователь <span class="font-monospace">Catmoonlight</span> является в ней менеджером</p>
+    Убедитесь, что пользователь <span class="font-monospace">cmw</span> является менеджером соревнований для всех контестов.</p>
 
 {% include '_last_update.html' with last_update=monitor.last_update %}
 
@@ -35,57 +35,77 @@
 </div>
 </div>
 
-<div class="accordion col-lg-8" id="contestsAcc">
+
+    <div class="col-lg-8">
+    <div class="row">
 {% for contest in contests %}
-  <div class="accordion-item">
-    <h2 class="accordion-header" id="heading{{ contest.cf_contest }}">
-      <button class="accordion-button {% if contest.has_errors %} bg-warning text-black {% endif %} collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ contest.cf_contest }}" aria-expanded="false" aria-controls="collapse{{ contest.cf_contest }}">
-          {{ contest.get_name }}
-      </button>
-    </h2>
-    <div id="collapse{{ contest.cf_contest }}" class="accordion-collapse collapse" aria-labelledby="heading{{ contest.cf_contest }}" data-bs-parent="#contestsAcc">
-      <div class="accordion-body">
-        {% if contest.status == contest.FRESH %}
-        <p class="fst-italic"> Задачи еще не загружены. Обновите страницу позже (это может занять много времени). </p>
-        {% else %}
-        {% include '_last_update.html' with last_update=contest.last_status_update %}
-        {% endif %}
-
-      {% if contest.last_comment %}
-        <p class="text-danger">{{ contest.last_comment }}</p>
-      {% endif %}
-      {% if contest.problem_set.exists %}
-      <p>Задачи:</p>
-
-        <ul class="list-group">
-            {% for problem in contest.problem_set.all %}
-                <li class="list-group-item">{{ problem.index }}. {{ problem.name }}</li>
-            {% endfor %}
-        </ul>
-      {% endif %}
-
-      {% if contest.status != contest.FRESH %}
-          <form method="post" class="pt-3">
-            {% csrf_token %}
-            <input type="hidden" name="query_type" value="refresh">
-            <input type="hidden" name="cf_contest" value="{{ contest.cf_contest }}">
-            <button type="submit" class="btn btn-outline-primary">Пересобрать</button>
-        </form>
-      {% endif %}
-          <form method="post" class="py-1">
-            {% csrf_token %}
-            <input type="hidden" name="query_type" value="delete">
-              <input type="hidden" name="cf_contest" value="{{ contest.cf_contest }}">
-            <button type="submit" class="btn btn-outline-danger" onclick="if (! confirm('Уверен?')) { return false; }">Удалить</button>
-        </form>
+<div class="col-md-6">
+<div class="card mb-4">
+<div class="card-header">{{ contest.get_name }}</div>
+<div class="card-body">
+    {{ contest.last_comment }}
+    {% include '_last_update.html' with last_update=contest.last_status_update %}
+    <div class="progress">
+      <div class="progress-bar w-75" role="progressbar" aria-label="Basic example" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
       </div>
     </div>
-  </div>
-{% endfor %}
 </div>
+</div>
+</div>
+{% endfor %}
+    </div></div>
 
-<p></p>
-
+{#<div class="accordion col-lg-8" id="contestsAcc">#}
+{#{% for contest in contests %}#}
+{#  <div class="accordion-item">#}
+{#    <h2 class="accordion-header" id="heading{{ contest.cf_contest }}">#}
+{#      <button class="accordion-button {% if contest.has_errors %} bg-warning text-black {% endif %} collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ contest.cf_contest }}" aria-expanded="false" aria-controls="collapse{{ contest.cf_contest }}">#}
+{#          {{ contest.get_name }}#}
+{#      </button>#}
+{#    </h2>#}
+{#    <div id="collapse{{ contest.cf_contest }}" class="accordion-collapse collapse" aria-labelledby="heading{{ contest.cf_contest }}" data-bs-parent="#contestsAcc">#}
+{#      <div class="accordion-body">#}
+{#        {% if contest.status == contest.FRESH %}#}
+{#        <p class="fst-italic"> Задачи еще не загружены. Обновите страницу позже (это может занять много времени). </p>#}
+{#        {% else %}#}
+{#        {% include '_last_update.html' with last_update=contest.last_status_update %}#}
+{#        {% endif %}#}
+{##}
+{#      {% if contest.last_comment %}#}
+{#        <p class="text-danger">{{ contest.last_comment }}</p>#}
+{#      {% endif %}#}
+{#      {% if contest.problem_set.exists %}#}
+{#      <p>Задачи:</p>#}
+{##}
+{#        <ul class="list-group">#}
+{#            {% for problem in contest.problem_set.all %}#}
+{#                <li class="list-group-item">{{ problem.index }}. {{ problem.name }}</li>#}
+{#            {% endfor %}#}
+{#        </ul>#}
+{#      {% endif %}#}
+{##}
+{#      {% if contest.status != contest.FRESH %}#}
+{#          <form method="post" class="pt-3">#}
+{#            {% csrf_token %}#}
+{#            <input type="hidden" name="query_type" value="refresh">#}
+{#            <input type="hidden" name="cf_contest" value="{{ contest.cf_contest }}">#}
+{#            <button type="submit" class="btn btn-outline-primary">Пересобрать</button>#}
+{#        </form>#}
+{#      {% endif %}#}
+{#          <form method="post" class="py-1">#}
+{#            {% csrf_token %}#}
+{#            <input type="hidden" name="query_type" value="delete">#}
+{#              <input type="hidden" name="cf_contest" value="{{ contest.cf_contest }}">#}
+{#            <button type="submit" class="btn btn-outline-danger" onclick="if (! confirm('Уверен?')) { return false; }">Удалить</button>#}
+{#        </form>#}
+{#      </div>#}
+{#    </div>#}
+{#  </div>#}
+{#{% endfor %}#}
+{#</div>#}
+{##}
+{#<p></p>#}
+{#    #}
 <div class="accordion col-lg-8" id="contestsAdd">
   <div class="accordion-item">
     <h2 class="accordion-header" id="headingAdd">
@@ -162,14 +182,5 @@
 <input type="hidden" name="query_type" value="delete_monitor">
 <button type="submit" class="btn btn-outline-danger" onclick="if (! confirm('Уверен?')) { return false; }">Удалить монитор</button>
 </form>
-
-{#    <script>#}
-{#const forms = document.getElementsByClassName("no-refresh");#}
-{#function handleForm(event) { event.preventDefault(); }#}
-{#for (let form of forms) {#}
-{#    form.addEventListener('submit', handleForm);#}
-{#    console.log(form)#}
-{# #}
-{#    </script>#}
 
 {% endblock %}

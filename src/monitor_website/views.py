@@ -26,28 +26,42 @@ def monitor_page(request: http.HttpRequest, monitor_id):
     CodeforcesWorker()
     monitor = get_object_or_404(models.Monitor, pk=monitor_id)
 
+    problem_list = []
+    for contest in monitor.contest_set.all():
+        problem_list += list(contest.problem_set.all())
+
     results = {}
     for person in monitor.personality_set.filter(is_blacklisted=False).all():
         results[person] = []
-        for contest in monitor.contest_set.order_by('pk').all():
-            for problem in contest.problem_set.all():
-                c = 0
-                lst = ('', '#', True)
-                for submit in person.submit_set.filter(problem=problem).order_by('submission_time').all():
-                    if submit.verdict == submit.OK:
-                        lst = ('+' if c == 0 else f'+{c}', submit.get_cf_url(), submit.is_contest)
-                        break
-                    else:
-                        c += 1
-                        lst = (f'-{c}', submit.get_cf_url(), submit.is_contest)
-                results[person] += [lst]
+        d_c = {}
+
+        for submit in person.submit_set.order_by('submission_time').all():
+            if submit.problem not in d_c:
+                d_c[submit.problem] = ('', '#', True, 0)
+            if d_c[submit.problem][0].startswith('+'):
+                continue
+
+            c = d_c[submit.problem][-1]
+            if submit.verdict == submit.OK:
+                d_c[submit.problem] = ('+' if c == 0 else f'+{c}', submit.get_cf_url(), submit.is_contest, c)
+            else:
+                d_c[submit.problem] = (f'-{c + 1}', submit.get_cf_url(), submit.is_contest, c + 1)
+
+        for problem in problem_list:
+            if problem in d_c:
+                results[person] += [d_c[problem]]
+            else:
+                results[person] += [('', '#', True, 0)]
 
     personalities = list(results.items())
-    personalities.sort(key=lambda x: -x[0].solved())
+    personalities.sort(key=lambda x: (-x[0].solved(), -x[0].practiced()))
+    for i in range(len(personalities)):
+        personalities[i] = (i + 1, personalities[i][0], personalities[i][1])
 
     return render(request, "monitor.html", {
         'title': monitor.human_name,
         'monitor': monitor,
+        'total_problems': len(problem_list),
         'personalities': personalities,
     })
 
@@ -129,4 +143,16 @@ def monitors_list_page(request: http.HttpRequest):
     return render(request, "home.html", {
         'title': "Мониторы",
         'monitors': models.Monitor.objects.all(),
+    })
+
+
+def worker_logs(request: http.HttpRequest):
+    if not request.user.is_authenticated:
+        raise http.Http404()
+
+    CodeforcesWorker()
+
+    return render(request, 'worker_logs.html', {
+        'title': 'Логи воркера',
+        'logs': sorted(CodeforcesWorker.logs.copy(), key=lambda x: x.time, reverse=True)
     })

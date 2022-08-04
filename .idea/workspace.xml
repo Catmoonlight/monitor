@@ -2,46 +2,15 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b63f3a87-c83e-4bce-8242-a498ba1a70c8" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/superMonitor.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/superMonitor.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/manage.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/monitor_website/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/monitor_website/apps.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/monitor_website/cf_worker.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/monitor_website/forms.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/monitor_website/migrations/0001_initial.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/monitor_website/migrations/0002_remove_monitor_name_alter_personality_nickname.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/monitor_website/migrations/0003_remove_contest_has_errors_remove_contest_is_fresh_and_more.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/monitor_website/migrations/0004_remove_monitor_allow_ghosts_and_more.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/monitor_website/migrations/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/monitor_website/models.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/monitor_website/tests.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/monitor_website/urls.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/monitor_website/views.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/prepods/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/prepods/apps.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/prepods/forms.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/prepods/migrations/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/prepods/tests.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/prepods/urls.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/prepods/views.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/superMonitor/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/superMonitor/asgi.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/superMonitor/settings.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/superMonitor/urls.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/superMonitor/wsgi.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/_last_update.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/auth.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/create.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/home.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/monitor.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/monitor_edit.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/prepods.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/monitor_website/cf_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/monitor_website/cf_worker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/monitor_website/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/monitor_website/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/monitor_website/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/monitor_website/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/monitor_website/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/monitor_website/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/templates/_last_update.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/templates/_last_update.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/templates/base.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/templates/monitor.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/templates/monitor.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/templates/monitor_edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/templates/monitor_edit.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -253,7 +222,7 @@
       <workItem from="1658772400082" duration="2696000" />
       <workItem from="1659504152429" duration="2111000" />
       <workItem from="1659506669935" duration="17397000" />
-      <workItem from="1659590124657" duration="717000" />
+      <workItem from="1659590124657" duration="13811000" />
     </task>
     <servers />
   </component>
@@ -298,9 +267,19 @@
           <option name="timeStamp" value="5" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/monitor_website/models.py</url>
+          <line>30</line>
+          <option name="timeStamp" value="10" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/monitor_website/models.py</url>
+          <line>137</line>
+          <option name="timeStamp" value="12" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/monitor_website/cf_worker.py</url>
-          <line>39</line>
-          <option name="timeStamp" value="9" />
+          <line>73</line>
+          <option name="timeStamp" value="13" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

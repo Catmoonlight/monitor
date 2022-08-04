@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block main_content %}
+<ul>
+    {% for log in logs %}
+    <li {% if log.style %}class="text-{{ log.style }}"{% endif %}>{{ log.time|date:"H:i:s" }} : {{ log.comment }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}
