@@ -29,7 +29,7 @@ def monitor_page(request: http.HttpRequest, monitor_id):
     results = {}
     for person in monitor.personality_set.filter(is_blacklisted=False).all():
         results[person] = []
-        for contest in monitor.contest_set.all():
+        for contest in monitor.contest_set.order_by('pk').all():
             for problem in contest.problem_set.all():
                 c = 0
                 lst = ('', '#', True)
@@ -39,7 +39,7 @@ def monitor_page(request: http.HttpRequest, monitor_id):
                         break
                     else:
                         c += 1
-                        lst = ('' if c == 0 else f'-{c}', submit.get_cf_url(), submit.is_contest)
+                        lst = (f'-{c}', submit.get_cf_url(), submit.is_contest)
                 results[person] += [lst]
 
     personalities = list(results.items())

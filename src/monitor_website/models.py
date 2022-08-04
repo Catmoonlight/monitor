@@ -59,7 +59,8 @@ class Problem(models.Model):
 
 
 class Submit(models.Model):
-    index = models.CharField("Индекс", max_length=20, unique=True)
+    # rewrite to unique ??
+    index = models.CharField("Индекс", max_length=20)
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
     personality = models.ForeignKey(Personality, on_delete=models.CASCADE)
     submission_time = models.DateTimeField("Дата отправления")
@@ -81,7 +82,7 @@ class Submit(models.Model):
 
 
 class Contest(models.Model):
-    cf_contest = models.CharField(max_length=20, unique=True, verbose_name="Номер контеста")
+    cf_contest = models.CharField(max_length=20, verbose_name="Номер контеста")
     human_name = models.TextField(blank=True)
     monitor = models.ForeignKey(Monitor, on_delete=models.CASCADE)
     last_status_update = models.DateTimeField(null=True)

@@ -7,9 +7,9 @@ class NewMonitorForm(forms.ModelForm):
         attrs={'class': 'form-control font-monospace',
                'placeholder': "codeforces.com/group/<Находится здесь>"})
     )
-    human_name = forms.CharField(label='Название монитора', widget=forms.TextInput(
+    human_name = forms.CharField(label='Название на сайте', widget=forms.TextInput(
         attrs={'class': 'form-control',
-               'placeholder': "Будет отображаться на сайте"}))
+               'placeholder': "Дюжонок, декабрь 2019, первая группа"}))
     is_hidden = forms.BooleanField(label='Скрыть по умолчанию?', required=False, widget=forms.CheckboxInput(
         attrs={'class': 'form-check-input',
                'checked': ""}))

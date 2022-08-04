@@ -1,3 +1,4 @@
+import os
 import random
 import threading
 import time
@@ -20,13 +21,12 @@ class CodeforcesWorker:
 
     def __init__(self):
         self._iters = 10
+        self.apiKey = os.environ.get('WORKER_KEY')
+        self.secret = os.environ.get('WORKER_SECRET')
         if not hasattr(self, "_worker") or not self._worker.is_alive():
             self._worker = threading.Thread(target=self.start)
             self._worker.start()
             print("Worker, wake up!")
-
-    apiKey = "a1f411b1edcf3691213599aff834bd62571cdf8d"
-    secret = "f7d39a9676ab4276ac5e2e2c8bfbe6288a6a19e7"
 
     def _get_apisig(self, func_name, params: dict):
         a = sorted([(i, j) for i, j in params.items()])
@@ -56,7 +56,7 @@ class CodeforcesWorker:
         contest.last_status_update = timezone.now()
 
         if 'status' not in status or status['status'] != 'OK':
-            print(f'result of {query} query failed because of {contest.last_comment}')
+            print(f'result of {query} query failed because {status["comment"]}')
 
             if 'status' in status and status['status'] == 'C':
                 contest.last_comment = status['comment']
@@ -102,28 +102,29 @@ class CodeforcesWorker:
             if problem is None:
                 return
 
-            personality, _ = models.Personality.objects.get_or_create(
-                monitor=contest.monitor,
-                nickname=submission['author']['members'][0]['handle'],
-                defaults={
-                    'is_blacklisted': contest.monitor.default_ghosts
-                }
-            )
+            for participant in submission['author']['members']:
+                personality, _ = models.Personality.objects.get_or_create(
+                    monitor=contest.monitor,
+                    nickname=participant['handle'],
+                    defaults={
+                        'is_blacklisted': contest.monitor.default_ghosts
+                    }
+                )
 
-            models.Submit.objects.update_or_create(
-                index=f"{submission['id']}",
-                defaults={
-                    'problem': problem,
-                    'personality': personality,
-                    'submission_time': datetime.datetime.fromtimestamp(
-                        submission['creationTimeSeconds'],
-                        pytz.timezone('utc')
-                    ),
-                    'verdict': 'TESTING' if 'verdict' not in submission else (
-                        submission['verdict'] if submission['verdict'] in ['OK', 'TESTING'] else 'NOT_OK'),
-                    'is_contest': submission['author']['participantType'] == 'CONTESTANT'
-                }
-            )
+                models.Submit.objects.update_or_create(
+                    index=f"{submission['id']}",
+                    problem=problem,
+                    defaults={
+                        'personality': personality,
+                        'submission_time': datetime.datetime.fromtimestamp(
+                            submission['creationTimeSeconds'],
+                            pytz.timezone('utc')
+                        ),
+                        'verdict': 'TESTING' if 'verdict' not in submission else (
+                            submission['verdict'] if submission['verdict'] in ['OK', 'TESTING'] else 'NOT_OK'),
+                        'is_contest': submission['author']['participantType'] == 'CONTESTANT'
+                    }
+                )
         print('Done!\n')
 
     def _init_contest(self, contest: models.Contest):
@@ -158,13 +159,15 @@ class CodeforcesWorker:
                     print(f"Init... {contest.human_name}")
                     self._init_contest(contest)
                 elif contests_q.filter(status=models.Contest.NORMAL).exists():
-                    contest = models.Contest.objects.filter(status=models.Contest.NORMAL)\
-                        .order_by('last_status_update').first()
+                    normals = contests_q.filter(status=models.Contest.NORMAL)
+                    contest = normals.filter(last_status_update__isnull=True).first() \
+                        if normals.filter(last_status_update__isnull=True).exists() \
+                        else normals.order_by('last_status_update').first()
                     print(f"Update... {contest.human_name}")
                     self._update_contest(contest)
                 else:
                     print('relax')
             except OperationalError:
                 print('Fuck! DB died :(')
-            time.sleep(4)
+            time.sleep(3)
             self._iters -= 1

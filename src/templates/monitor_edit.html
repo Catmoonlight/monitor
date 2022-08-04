@@ -6,14 +6,16 @@
     <!--<br>
     <a href="{% url 'main:monitor_edit' monitor_id=monitor.pk %}" class="link-secondary text-decoration-none"> &#128260; Перезагрузить </a>-->
 </p>
-    <p>Монитор создан для группы <span class="font-monospace">{{ monitor.group }}</span>.
-        Убедитесь, что пользователь <span class="font-monospace">Catmoonlight</span> является в ней менеджером</p>
+<p>Монитор создан для группы <span class="font-monospace">{{ monitor.group }}</span>.
+    Убедитесь, что пользователь <span class="font-monospace">Catmoonlight</span> является в ней менеджером</p>
 
 {% include '_last_update.html' with last_update=monitor.last_update %}
 
-<div class="card mb-4 col-md-6 col-lg-3"> <div class="card-header">
-    &#128736; Настроки монитора
-  </div> <div class="card-body">
+<div class="card mb-4 col-md-6 col-lg-3">
+<div class="card-header">
+&#128736; Настроки монитора
+</div>
+<div class="card-body">
 
 <form method="post" class="row">
 {% csrf_token %}
@@ -30,15 +32,7 @@
 <div class="col-sm-3"><input type="checkbox" onclick="this.form.requestSubmit()" id="enable_worker" class="form-check-input"
        name="is_set" {% if not monitor.is_old %}checked{% endif %}></div>
 </form>
-
-<form method="post" class="row">
-{% csrf_token %}
-<input type="hidden" name="query_type" value="ghosts">
-<label class="col-sm-9" for="default_ghosts">&#128683; по умолчанию?</label>
-<div class="col-sm-3"><input type="checkbox" onclick="this.form.requestSubmit()" id="default_ghosts" class="form-check-input"
-       name="is_set" {% if monitor.default_ghosts %}checked{% endif %}></div>
-</form>
-    </div>
+</div>
 </div>
 
 <div class="accordion col-lg-8" id="contestsAcc">
@@ -52,7 +46,7 @@
     <div id="collapse{{ contest.cf_contest }}" class="accordion-collapse collapse" aria-labelledby="heading{{ contest.cf_contest }}" data-bs-parent="#contestsAcc">
       <div class="accordion-body">
         {% if contest.status == contest.FRESH %}
-        <p class="fst-italic"> Задачи еще не загружены. Обновите страницу. </p>
+        <p class="fst-italic"> Задачи еще не загружены. Обновите страницу позже (это может занять много времени). </p>
         {% else %}
         {% include '_last_update.html' with last_update=contest.last_status_update %}
         {% endif %}
