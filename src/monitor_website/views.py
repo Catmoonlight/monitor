@@ -84,17 +84,12 @@ def monitor_edit(request: http.HttpRequest, monitor_id):
         if q_type == 'delete_monitor':
             monitor.delete()
             return redirect('main:home')
-        # monitor settings
         elif q_type == 'show':
             monitor.is_hidden = not ('is_set' in post and post['is_set'] == 'on')
             monitor.save()
         elif q_type == 'worker':
             monitor.is_old = not ('is_set' in post and post['is_set'] == 'on')
             monitor.save()
-        elif q_type == "ghosts":
-            monitor.default_ghosts = 'is_set' in post and post['is_set'] == 'on'
-            monitor.save()
-        # contests
         elif q_type == 'create':
             create_contest_form = forms.CreateContestForm(post)
             if create_contest_form.is_valid():
@@ -108,17 +103,6 @@ def monitor_edit(request: http.HttpRequest, monitor_id):
                         human_name=data['human_name']
                     )
                     create_contest_form = forms.CreateContestForm()
-        elif q_type == 'delete':
-            cf_contest = post['cf_contest']
-            contest = get_object_or_404(models.Contest, cf_contest=cf_contest, monitor=monitor)
-            contest.delete()
-        elif q_type == 'refresh':
-            cf_contest = post['cf_contest']
-            contest = get_object_or_404(models.Contest, cf_contest=cf_contest, monitor=monitor)
-            contest.status = contest.FRESH
-            contest.problem_set.all().delete()
-            contest.last_status_update = None
-            contest.save()
         # pers
         elif q_type == 'update_pers':
             for person in models.Personality.objects.filter(monitor=monitor).all():
@@ -137,6 +121,61 @@ def monitor_edit(request: http.HttpRequest, monitor_id):
     })
 
 
+def _edit_get_contest(request, monitor_id, contest_id):
+    if not request.user.is_authenticated:
+        raise http.Http404()
+    monitor = get_object_or_404(models.Monitor, pk=monitor_id)
+    return get_object_or_404(models.Contest, cf_contest=contest_id, monitor=monitor)
+
+
+def edit_delete_contest(request, monitor_id, contest_id):
+    contest = _edit_get_contest(request, monitor_id, contest_id)
+    contest.delete()
+    return redirect('main:monitor_edit', monitor_id=monitor_id)
+
+
+def edit_refresh_contest(request, monitor_id, contest_id):
+    contest = _edit_get_contest(request, monitor_id, contest_id)
+    contest.refresh()
+    return redirect('main:monitor_edit', monitor_id=monitor_id)
+
+
+def edit_rename_contest(request, monitor_id, contest_id):
+    contest = _edit_get_contest(request, monitor_id, contest_id)
+    new_name = request.GET['name']
+    contest.human_name = new_name
+    contest.save()
+    return redirect('main:monitor_edit', monitor_id=monitor_id)
+
+
+def edit_move_left_contest(request, monitor_id, contest_id):
+    if not request.user.is_authenticated:
+        raise http.Http404()
+    monitor = get_object_or_404(models.Monitor, pk=monitor_id)
+    all_contests = list(monitor.contest_set.all())
+    for i in range(1, len(all_contests)):
+        if all_contests[i].cf_contest == str(contest_id):
+            all_contests[i].index, all_contests[i-1].index = all_contests[i-1].index, all_contests[i].index
+            all_contests[i].save()
+            all_contests[i-1].save()
+            break
+    return redirect('main:monitor_edit', monitor_id=monitor_id)
+
+
+def edit_move_right_contest(request, monitor_id, contest_id):
+    if not request.user.is_authenticated:
+        raise http.Http404()
+    monitor = get_object_or_404(models.Monitor, pk=monitor_id)
+    all_contests = list(monitor.contest_set.all())
+    for i in range(len(all_contests) - 1):
+        if all_contests[i].cf_contest == str(contest_id):
+            all_contests[i].index, all_contests[i+1].index = all_contests[i+1].index, all_contests[i].index
+            all_contests[i].save()
+            all_contests[i+1].save()
+            break
+    return redirect('main:monitor_edit', monitor_id=monitor_id)
+
+
 def monitors_list_page(request: http.HttpRequest):
     CodeforcesWorker()
 
@@ -151,7 +190,6 @@ def worker_logs(request: http.HttpRequest):
         raise http.Http404()
 
     CodeforcesWorker()
-
     return render(request, 'worker_logs.html', {
         'title': 'Логи воркера',
         'logs': sorted(CodeforcesWorker.logs.copy(), key=lambda x: x.time, reverse=True)

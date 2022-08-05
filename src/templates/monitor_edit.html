@@ -9,9 +9,13 @@
 <p>Монитор создан для группы <span class="font-monospace">{{ monitor.group }}</span>.
     Убедитесь, что пользователь <span class="font-monospace">cmw</span> является менеджером соревнований для всех контестов.</p>
 
-{% include '_last_update.html' with last_update=monitor.last_update %}
+    <p>{% include '_last_update.html' with last_update=monitor.last_update %}</p>
 
-<div class="card mb-4 col-md-6 col-lg-3">
+
+<div class="col-lg-8">
+<div class="row">
+<div class="col-md-6 col-lg-4">
+<div class="card mb-4">
 <div class="card-header">
 &#128736; Настроки монитора
 </div>
@@ -34,22 +38,54 @@
 </form>
 </div>
 </div>
+</div>
+</div>
+</div>
 
+<div class="col-lg-8">
+<div class="row">
 
-    <div class="col-lg-8">
-    <div class="row">
 {% for contest in contests %}
-<div class="col-md-6">
+<div class="col-md-6 col-lg-4">
 <div class="card mb-4">
-<div class="card-header">{{ contest.get_name }}</div>
+<div class="card-header">
+    <div class="row">
+    <div class="col-10 text-truncate">{{ contest.get_name }}</div>
+    <div class="col-2">
+        <a href="#" class="text-decoration-none" onclick="let x = prompt('Введите новое название (оставьте поле пустым для отмены)'); if (x) { var http = new XMLHttpRequest(); http.open('GET', '{% url 'main:contest_rename' monitor_id=monitor.pk contest_id=contest.cf_contest %}'+'?name='+x, true); http.onload = function() { document.location.reload(); }; http.send(null); } else { return false; }">&#9999;</a>
+    </div>
+    </div>
+</div>
 <div class="card-body">
-    {{ contest.last_comment }}
-    {% include '_last_update.html' with last_update=contest.last_status_update %}
-    <div class="progress">
-      <div class="progress-bar w-75" role="progressbar" aria-label="Basic example" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
+    <p class="card-text">
+    {% include '_last_update.html' with last_update=contest.last_status_update %}</p>
+    <div class="progress" style="height: 2px;">
+      <div class="progress-bar bg-light" role="progressbar" style="width: 100%">
       </div>
     </div>
 </div>
+<div class="card-footer text-muted">
+<div class="row">
+    <div class="col-3 text-center">
+
+        <a href="{% url 'main:contest_left' monitor_id=monitor.pk contest_id=contest.cf_contest %}" class="text-decoration-none">
+            &#11013;</a>
+    </div>
+    <div class="col-3 text-center">
+        <a href="{% url 'main:contest_refresh' monitor_id=monitor.pk contest_id=contest.cf_contest %}" class="text-decoration-none">&#128260;</a>
+    </div>
+    <div class="col-3 text-center">
+        <a href="{% url 'main:contest_delete' monitor_id=monitor.pk contest_id=contest.cf_contest %}" onclick="if (! confirm('Уверен?')) { return false; }" class="text-decoration-none">&#128465;</a>
+    </div>
+    <div class="col-3 text-center">
+
+        <a href="{% url 'main:contest_right' monitor_id=monitor.pk contest_id=contest.cf_contest %}" class="text-decoration-none">
+            &#10145;</a>
+    </div>
+
+</div>
+</div>
+
 </div>
 </div>
 {% endfor %}

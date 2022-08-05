@@ -84,8 +84,7 @@ class CodeforcesWorker:
             if 'comment' not in status:
                 status['comment'] = "Неизвестная проблема"
 
-            contest.set_error(status['comment'])
-            self.Log(f'Метод {query} для контеста {contest.human_name} не сработал: {status["comment"]}')
+            self.Log(f'Метод {query} для контеста {contest.human_name} не сработал: {status["comment"]}', 'danger')
             return None
 
         # contest.last_comment = ''
@@ -152,7 +151,7 @@ class CodeforcesWorker:
         contest.last_status_update = timezone.now()
         contest.save()
 
-        self.Log(f'Обновление "{contest.human_name}" ({contest.monitor.human_name}) завершено! Новых посылок: {new}')
+        self.Log(f'Обновление "{contest.human_name}" ({contest.monitor.human_name}) завершено! Новых посылок: {new}', 'success')
 
     def _init_contest(self, contest: models.Contest):
         result = self._try_return_result(contest, 'contest.standings')

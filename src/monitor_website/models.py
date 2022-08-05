@@ -138,3 +138,9 @@ class Contest(models.Model):
         if self.index is None:
             self.index = self.pk
         super(Contest, self).save(*args, **kwargs)
+
+    def refresh(self):
+        self.status = self.FRESH
+        self.problem_set.all().delete()
+        self.last_status_update = None
+        self.save()
