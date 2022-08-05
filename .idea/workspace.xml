@@ -4,10 +4,12 @@
     <list default="true" id="b63f3a87-c83e-4bce-8242-a498ba1a70c8" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/monitor_website/cf_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/monitor_website/cf_worker.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/monitor_website/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/monitor_website/forms.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/monitor_website/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/monitor_website/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/monitor_website/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/monitor_website/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/monitor_website/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/monitor_website/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/superMonitor/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/superMonitor/settings.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/templates/_last_update.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/templates/_last_update.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/templates/monitor.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/templates/monitor.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/templates/monitor_edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/templates/monitor_edit.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -222,7 +224,7 @@
       <workItem from="1659506669935" duration="17397000" />
       <workItem from="1659590124657" duration="13811000" />
       <workItem from="1659636262847" duration="2610000" />
-      <workItem from="1659675928030" duration="4160000" />
+      <workItem from="1659675928030" duration="21415000" />
     </task>
     <servers />
   </component>
@@ -272,24 +274,29 @@
           <option name="timeStamp" value="10" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/monitor_website/models.py</url>
-          <line>137</line>
-          <option name="timeStamp" value="12" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/monitor_website/cf_worker.py</url>
-          <line>73</line>
-          <option name="timeStamp" value="13" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/monitor_website/views.py</url>
-          <line>153</line>
+          <line>175</line>
           <option name="timeStamp" value="14" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/monitor_website/views.py</url>
-          <line>143</line>
+          <line>165</line>
           <option name="timeStamp" value="15" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/monitor_website/cf_worker.py</url>
+          <line>93</line>
+          <option name="timeStamp" value="16" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/monitor_website/cf_worker.py</url>
+          <line>179</line>
+          <option name="timeStamp" value="19" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/monitor_website/cf_worker.py</url>
+          <line>128</line>
+          <option name="timeStamp" value="20" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

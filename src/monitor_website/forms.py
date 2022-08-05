@@ -5,7 +5,7 @@ import monitor_website.models as models
 class NewMonitorForm(forms.ModelForm):
     group = forms.CharField(label='Код группы', widget=forms.TextInput(
         attrs={'class': 'form-control font-monospace',
-               'placeholder': "codeforces.com/group/<Находится здесь>"})
+               'placeholder': "codeforces.com/group/<нужны эти 10 символов>"})
     )
     human_name = forms.CharField(label='Название на сайте', widget=forms.TextInput(
         attrs={'class': 'form-control',
@@ -22,7 +22,7 @@ class NewMonitorForm(forms.ModelForm):
 class CreateContestForm(forms.Form):
     cf_contest = forms.IntegerField(label='ID контеста', widget=forms.TextInput(
         attrs={'class': 'form-control font-monospace',
-               'placeholder': "/group/.../contest/<Находится здесь>"})
+               'placeholder': "codeforces.com/.../contest/<вот эти цифры>"})
     )
     human_name = forms.CharField(label='Название контеста', required=False,
                                  widget=forms.TextInput(attrs={

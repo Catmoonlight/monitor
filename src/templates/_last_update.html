@@ -1,8 +1,8 @@
 <span class="fst-italic">
 {% load tz %}
 {% if last_update %}
-{% localtime on %} Обновлен: {{ last_update|date:"j b, H:i:s" }} {% endlocaltime %}
+{% localtime on %} Актуален на {{ last_update|date:"j b, H:i:s" }} {% endlocaltime %}
 {% else %}
-Обновлений еще не было
+Ждем подгрузки с codeforces...
 {% endif %}
 </span>

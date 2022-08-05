@@ -35,6 +35,23 @@ class CodeforcesWorker:
     logs = []
     current_status = Status()
 
+    VERDICTS = {
+        'FAILED': 'FAIL',
+        'OK': 'OK',
+        "COMPILATION_ERROR": 'CE',
+        'RUNTIME_ERROR': 'RE',
+        'WRONG_ANSWER': 'WA',
+        'PRESENTATION_ERROR': 'PE',
+        'TIME_LIMIT_EXCEEDED': 'TL',
+        'MEMORY_LIMIT_EXCEEDED': 'ML',
+        'IDLENESS_LIMIT_EXCEEDED': "IdL",
+        'SECURITY_VIOLATED': 'SV',
+        'CRASH': "crash",
+        "SKIPPED": "skip",
+        'TESTING': 'testing',
+        'REJECTED': 'reject'
+    }
+
     def __new__(cls, *args, **kwargs):
         if not isinstance(cls._instance, cls):
             cls._instance = object.__new__(cls, *args, **kwargs)
@@ -73,7 +90,7 @@ class CodeforcesWorker:
         try:
             js = result.json()
             return js
-        except requests.exceptions.RequestsJSONDecodeError:
+        except requests.exceptions.JSONDecodeError:
             self.Log(f"Не хочет превращаться в json: {result.content}", 'danger')
             return {'status': 'C', 'comment': 'Непонятная проблема с json'}
 
@@ -85,12 +102,8 @@ class CodeforcesWorker:
                 status['comment'] = "Неизвестная проблема"
 
             self.Log(f'Метод {query} для контеста {contest.human_name} не сработал: {status["comment"]}', 'danger')
+            contest.set_error(f"Cf: {status['comment']}.")
             return None
-
-        # contest.last_comment = ''
-        # contest.last_status_update = timezone.now()
-        # contest.has_errors = False
-        # contest.save()
 
         return status['result']
 
@@ -138,9 +151,13 @@ class CodeforcesWorker:
                             submission['creationTimeSeconds'],
                             pytz.timezone('utc')
                         ),
-                        'verdict': 'TESTING' if 'verdict' not in submission else (
-                            submission['verdict'] if submission['verdict'] in ['OK', 'TESTING'] else 'NOT_OK'),
-                        'is_contest': submission['author']['participantType'] == 'CONTESTANT'
+                        'verdict':
+                            'NA' if 'verdict' not in submission or submission['verdict'] not in self.VERDICTS
+                            else self.VERDICTS[submission['verdict']],
+                        'test_no': None if 'passedTestCount' not in submission else submission['passedTestCount'] + 1,
+                        'is_contest': submission['author']['participantType'] == 'CONTESTANT',
+                        'language': submission['programmingLanguage'],
+                        'max_time': 0 if 'timeConsumedMillis' not in submission else submission['timeConsumedMillis']
                     }
                 )
                 if is_new:
@@ -151,7 +168,8 @@ class CodeforcesWorker:
         contest.last_status_update = timezone.now()
         contest.save()
 
-        self.Log(f'Обновление "{contest.human_name}" ({contest.monitor.human_name}) завершено! Новых посылок: {new}', 'success')
+        self.Log(f'Обновление "{contest.human_name}" ({contest.monitor.human_name}) завершено! Новых посылок: {new}',
+                 'success')
 
     def _init_contest(self, contest: models.Contest):
         result = self._try_return_result(contest, 'contest.standings')
@@ -164,7 +182,8 @@ class CodeforcesWorker:
             models.Problem.objects.create(
                 index=problem_d['index'],
                 name=problem_d['name'],
-                contest=contest
+                contest=contest,
+                difficulty=problem_d['rating']
             )
 
         if not contest.human_name:

@@ -3,13 +3,13 @@
 <H1>Редактирование &laquo;{{ monitor.human_name }}&raquo; </H1>
 <p>
     <a href="{% url 'main:monitor' monitor_id=monitor.pk %}" class="link-secondary text-decoration-none"> &#8617; Выйти из редактирования </a>
-    <!--<br>
-    <a href="{% url 'main:monitor_edit' monitor_id=monitor.pk %}" class="link-secondary text-decoration-none"> &#128260; Перезагрузить </a>-->
 </p>
-<p>Монитор создан для группы <span class="font-monospace">{{ monitor.group }}</span>.
-    Убедитесь, что пользователь <span class="font-monospace">cmw</span> является менеджером соревнований для всех контестов.</p>
-
-    <p>{% include '_last_update.html' with last_update=monitor.last_update %}</p>
+    <p>
+<span class="fw-semibold">
+Убедитесь, что пользователь <span class="font-monospace">cmw</span> является <span class="text-decoration-underline">менеджером соревнований</span> для всех контестов группы.</span>
+Группа: <span class="font-monospace">{{ monitor.group }}</span>
+</p>
+    <p>{% if monitor.contest_set.exists %}{% include '_last_update.html' with last_update=monitor.last_update %}{% else %}<span class="fst-italic">Нужно добавить контесты!</span>{% endif %}</p>
 
 
 <div class="col-lg-8">
@@ -22,6 +22,7 @@
 <div class="card-body">
 
 <form method="post" class="row">
+
 {% csrf_token %}
 <input type="hidden" name="query_type" value="show">
 <label class="col-sm-9" for="show_contest">Монитор публичный?</label>
@@ -91,57 +92,6 @@
 {% endfor %}
     </div></div>
 
-{#<div class="accordion col-lg-8" id="contestsAcc">#}
-{#{% for contest in contests %}#}
-{#  <div class="accordion-item">#}
-{#    <h2 class="accordion-header" id="heading{{ contest.cf_contest }}">#}
-{#      <button class="accordion-button {% if contest.has_errors %} bg-warning text-black {% endif %} collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ contest.cf_contest }}" aria-expanded="false" aria-controls="collapse{{ contest.cf_contest }}">#}
-{#          {{ contest.get_name }}#}
-{#      </button>#}
-{#    </h2>#}
-{#    <div id="collapse{{ contest.cf_contest }}" class="accordion-collapse collapse" aria-labelledby="heading{{ contest.cf_contest }}" data-bs-parent="#contestsAcc">#}
-{#      <div class="accordion-body">#}
-{#        {% if contest.status == contest.FRESH %}#}
-{#        <p class="fst-italic"> Задачи еще не загружены. Обновите страницу позже (это может занять много времени). </p>#}
-{#        {% else %}#}
-{#        {% include '_last_update.html' with last_update=contest.last_status_update %}#}
-{#        {% endif %}#}
-{##}
-{#      {% if contest.last_comment %}#}
-{#        <p class="text-danger">{{ contest.last_comment }}</p>#}
-{#      {% endif %}#}
-{#      {% if contest.problem_set.exists %}#}
-{#      <p>Задачи:</p>#}
-{##}
-{#        <ul class="list-group">#}
-{#            {% for problem in contest.problem_set.all %}#}
-{#                <li class="list-group-item">{{ problem.index }}. {{ problem.name }}</li>#}
-{#            {% endfor %}#}
-{#        </ul>#}
-{#      {% endif %}#}
-{##}
-{#      {% if contest.status != contest.FRESH %}#}
-{#          <form method="post" class="pt-3">#}
-{#            {% csrf_token %}#}
-{#            <input type="hidden" name="query_type" value="refresh">#}
-{#            <input type="hidden" name="cf_contest" value="{{ contest.cf_contest }}">#}
-{#            <button type="submit" class="btn btn-outline-primary">Пересобрать</button>#}
-{#        </form>#}
-{#      {% endif %}#}
-{#          <form method="post" class="py-1">#}
-{#            {% csrf_token %}#}
-{#            <input type="hidden" name="query_type" value="delete">#}
-{#              <input type="hidden" name="cf_contest" value="{{ contest.cf_contest }}">#}
-{#            <button type="submit" class="btn btn-outline-danger" onclick="if (! confirm('Уверен?')) { return false; }">Удалить</button>#}
-{#        </form>#}
-{#      </div>#}
-{#    </div>#}
-{#  </div>#}
-{#{% endfor %}#}
-{#</div>#}
-{##}
-{#<p></p>#}
-{#    #}
 <div class="accordion col-lg-8" id="contestsAdd">
   <div class="accordion-item">
     <h2 class="accordion-header" id="headingAdd">
@@ -189,7 +139,7 @@
           <tr>
               <th class="align-middle text-center">Ник</th>
               <th class="align-middle text-center">Имя</th>
-              <th class="align-middle text-center">&#128683;</th>
+              <th class="align-middle text-center">В мониторе?</th>
           </tr>
           {% for pers in personals %}
           <tr>
@@ -199,7 +149,7 @@
           </td>
           <td class="align-middle text-center">
              <input type="checkbox" class="form-check-input"
-             name="{{ pers.nickname }}_is_blacklisted" aria-label="is blacklisted?" {% if pers.is_blacklisted %}checked{% endif %}>
+             name="{{ pers.nickname }}_is_whitelisted" aria-label="is whitelisted?" {% if not pers.is_blacklisted %}checked{% endif %}>
           </td>
           </tr>
           {% endfor %}

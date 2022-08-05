@@ -31,32 +31,54 @@ def monitor_page(request: http.HttpRequest, monitor_id):
         problem_list += list(contest.problem_set.all())
 
     results = {}
+    contest_solved = {}
+    practiced = {}
+
     for person in monitor.personality_set.filter(is_blacklisted=False).all():
         results[person] = []
+        contest_solved[person] = 0
+        practiced[person] = 0
+
         d_c = {}
 
         for submit in person.submit_set.order_by('submission_time').all():
             if submit.problem not in d_c:
-                d_c[submit.problem] = ('', '#', True, 0)
+                d_c[submit.problem] = ('', '#', None, 0)
             if d_c[submit.problem][0].startswith('+'):
                 continue
 
             c = d_c[submit.problem][-1]
             if submit.verdict == submit.OK:
-                d_c[submit.problem] = ('+' if c == 0 else f'+{c}', submit.get_cf_url(), submit.is_contest, c)
+                d_c[submit.problem] = ('+' if c == 0 else f'+{c}',
+                                       submit.get_cf_url() if request.user.is_authenticated else '#',
+                                       submit, c)
+                if submit.is_contest:
+                    contest_solved[person] += 1
+                else:
+                    practiced[person] += 1
             else:
-                d_c[submit.problem] = (f'-{c + 1}', submit.get_cf_url(), submit.is_contest, c + 1)
+                d_c[submit.problem] = (f'-{c + 1}', submit.get_cf_url() if request.user.is_authenticated else '#',
+                                       submit, c + 1)
 
         for problem in problem_list:
             if problem in d_c:
                 results[person] += [d_c[problem]]
             else:
-                results[person] += [('', '#', True, 0)]
+                results[person] += [('', '#', None, 0)]
 
     personalities = list(results.items())
-    personalities.sort(key=lambda x: (-x[0].solved(), -x[0].practiced()))
+
+    places = sorted([(contest_solved[person] + practiced[person], contest_solved[person])
+                     for person, _ in personalities])[::-1]
+    contest_places = sorted([contest_solved[person] for person, _ in personalities])[::-1]
+
+    personalities.sort(key=lambda x: (-contest_solved[x[0]] - practiced[x[0]], -contest_solved[x[0]]))
     for i in range(len(personalities)):
-        personalities[i] = (i + 1, personalities[i][0], personalities[i][1])
+        person = personalities[i][0]
+        index = places.index((contest_solved[person] + practiced[person], contest_solved[person])) + 1
+        c_index = contest_places.index(contest_solved[person]) + 1
+        personalities[i] = (index, c_index - index, person, personalities[i][1],
+                            contest_solved[person] + practiced[person], practiced[person])
 
     return render(request, "monitor.html", {
         'title': monitor.human_name,
@@ -109,7 +131,7 @@ def monitor_edit(request: http.HttpRequest, monitor_id):
                 if f'{person.nickname}_real_name' not in post:
                     continue
                 person.real_name = post[f'{person.nickname}_real_name']
-                person.is_blacklisted = f'{person.nickname}_is_blacklisted' in post and post[f'{person.nickname}_is_blacklisted'] == 'on'
+                person.is_blacklisted = not (f'{person.nickname}_is_whitelisted' in post and post[f'{person.nickname}_is_whitelisted'] == 'on')
                 person.save()
 
     return render(request, "monitor_edit.html", {

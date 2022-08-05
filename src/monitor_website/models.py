@@ -47,18 +47,6 @@ class Personality(models.Model):
             return f"🚫 {name}"
         return name
 
-    def solved(self):
-        submits = self.submit_set.filter(verdict=Submit.OK)
-        return len(set(submit.problem for submit in submits))
-
-    def practiced(self):
-        submits = self.submit_set.filter(verdict=Submit.OK, is_contest=False)
-        return len(set(submit.problem for submit in submits))
-
-    def contest_solved(self):
-        submits = self.submit_set.filter(verdict=Submit.OK, is_contest=True)
-        return len(set(submit.problem for submit in submits))
-
 
 class Problem(models.Model):
     index = models.CharField("Номер в контесте", max_length=10, blank=True)
@@ -66,6 +54,7 @@ class Problem(models.Model):
     desc = models.TextField("Короткое описание", blank=True)  # no functional
     contest = models.ForeignKey("Contest", on_delete=models.CASCADE, verbose_name="Контест")
     is_analysed = models.BooleanField('Разобрано?', default=False)  # no functional
+    difficulty = models.IntegerField("Сложность", null=True)
 
     class Meta:
         ordering = ['index']
@@ -80,17 +69,12 @@ class Submit(models.Model):
     personality = models.ForeignKey(Personality, on_delete=models.CASCADE)
     submission_time = models.DateTimeField("Дата отправления")
     is_contest = models.BooleanField("Сдано на контесте?")
+    verdict = models.CharField(max_length=20)
+    test_no = models.IntegerField(null=True)
+    language = models.CharField(max_length=50, blank=True)
+    max_time = models.IntegerField(null=True)
 
     OK = "OK"
-    NOT_OK = "NOT_OK"
-
-    verdict = models.CharField(
-        max_length=10,
-        choices=(
-            (OK, "OK"),
-            (NOT_OK, "Не зачтено"),
-        )
-    )
 
     def get_cf_url(self):
         return f"https://codeforces.com/group/{self.problem.contest.monitor.group}/contest/{self.problem.contest.cf_contest}/submission/{self.index}"
@@ -101,8 +85,11 @@ class Contest(models.Model):
     cf_contest = models.CharField(max_length=20, verbose_name="Номер контеста")
     human_name = models.TextField(blank=True)
     monitor = models.ForeignKey(Monitor, on_delete=models.CASCADE)
-    last_status_update = models.DateTimeField(null=True)
     last_comment = models.TextField(blank=True)
+
+    last_status_update = models.DateTimeField(null=True)
+    last_ping = models.DateTimeField(null=True)
+    last_big_update = models.DateTimeField(null=True)
 
     class Meta:
         ordering = ['index']
@@ -124,7 +111,7 @@ class Contest(models.Model):
     def get_name(self):
         if self.human_name:
             return f"{self.human_name}"
-        return f"No. {self.cf_contest}"
+        return f"# {self.cf_contest}"
 
     def get_cf_url(self):
         return f"https://codeforces.com/group/{self.monitor.group}/contest/{self.cf_contest}"
