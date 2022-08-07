@@ -2,14 +2,23 @@ import django.http as http
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 import monitor_website.models as models
 import monitor_website.forms as forms
 
-from monitor_website.cf_worker import CodeforcesWorker
+from monitor_website.cf_worker import CodeforcesWorker, ping
 
 
-class NewMonitorView(CreateView):
+def auth_or_404(function):
+    def new_func(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            raise http.Http404()
+        function(request, *args, **kwargs)
+    return new_func
+
+
+class NewMonitorView(LoginRequiredMixin, CreateView):
     model = models.Monitor
     form_class = forms.NewMonitorForm
     template_name = 'create.html'
@@ -23,8 +32,8 @@ class NewMonitorView(CreateView):
 
 
 def monitor_page(request: http.HttpRequest, monitor_id):
-    CodeforcesWorker()
     monitor = get_object_or_404(models.Monitor, pk=monitor_id)
+    ping(monitor)
 
     problem_list = []
     for contest in monitor.contest_set.all():
@@ -92,8 +101,8 @@ def monitor_edit(request: http.HttpRequest, monitor_id):
     if not request.user.is_authenticated:
         raise http.Http404()
 
-    CodeforcesWorker()
     monitor = get_object_or_404(models.Monitor, pk=monitor_id)
+    ping(monitor)
     contests = monitor.contest_set.all()
 
     create_contest_form = forms.CreateContestForm()
@@ -139,7 +148,8 @@ def monitor_edit(request: http.HttpRequest, monitor_id):
         'monitor': monitor,
         'contests': contests,
         'creation_form': create_contest_form,
-        'personals': sorted(list(monitor.personality_set.all()), key=lambda x: x.nickname.lower())
+        'personals': sorted(list(monitor.personality_set.all()), key=lambda x: x.nickname.lower()),
+        'w_status': CodeforcesWorker.current_status
     })
 
 
@@ -214,5 +224,23 @@ def worker_logs(request: http.HttpRequest):
     CodeforcesWorker()
     return render(request, 'worker_logs.html', {
         'title': 'Логи воркера',
-        'logs': sorted(CodeforcesWorker.logs.copy(), key=lambda x: x.time, reverse=True)
+        'logs': sorted(CodeforcesWorker.worker_logs.copy(), key=lambda x: x.time, reverse=True)
+    })
+
+
+def favicon(request):
+    # shitty implementation but ok for now
+    import os
+    path = os.path.join(os.path.dirname(__file__), "../../favicon.ico")
+    print(path)
+    image = open(path, "rb").read()
+    return http.HttpResponse(image, content_type="image/ico")
+
+
+def card_inside(request, monitor_id):
+    contest_id = request.GET.get('contest', 'lol')
+    contest = _edit_get_contest(request, monitor_id, contest_id)
+    return render(request, '__card_inside.html', {
+        "contest": contest,
+        "w_status": CodeforcesWorker.current_status
     })

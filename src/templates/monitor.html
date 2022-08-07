@@ -12,7 +12,13 @@
 {% endif %}
 </p>
 
-{% if monitor.contest_set.exists %}{% include '_last_update.html' with last_update=monitor.last_update %}{% else %}<span class="fst-italic">Нужно добавить контесты!</span>{% endif %}
+{% if monitor.has_errors %}
+    <span class="fw-bold">Монитор выгружен ошибками, обратитесь к преподавателю!</span>
+{% elif monitor.contest_set.exists %}
+    {% include '_last_update.html' with last_update=monitor.last_update %}
+{% else %}
+    <span class="fst-italic">Нужно добавить контесты!</span>
+{% endif %}
 
 <div class="px-md-3 py-2">
 <div class="table-responsive table-rounded-borders">
@@ -32,7 +38,7 @@
         <tr>
             {% for contest in monitor.contest_set.all %}
                 {% for problem in contest.problem_set.all %}
-                <td class="text-center font-monospace position-relative" style="min-width: 1cm" data-trigger="focus" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ problem.name }}{% if user.is_authenticated %} [{{ problem.difficulty }}]{% endif %}">
+                <td class="text-center font-monospace position-relative" style="min-width: 1cm" data-trigger="focus" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ problem.name }}{% if user.is_authenticated and problem.difficulty %} [{{ problem.difficulty }}]{% endif %}">
                     <a href="{{ problem.get_cf_url }}" target="_blank" class="stretched-link link-dark text-decoration-none">{{ problem.index }}</a></td>
                 {% endfor %}
             {% endfor %}

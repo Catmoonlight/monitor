@@ -14,6 +14,8 @@ urlpatterns = [
     path('monitor/<int:monitor_id>/edit/left/<int:contest_id>', views.edit_move_left_contest, name="contest_left"),
     path('monitor/<int:monitor_id>/edit/right/<int:contest_id>', views.edit_move_right_contest, name="contest_right"),
     path('monitor/<int:monitor_id>/edit/rename/<int:contest_id>', views.edit_rename_contest, name="contest_rename"),
+    path('monitor/<int:monitor_id>/card', views.card_inside, name='card_inside'),
 
-    path('logs/', views.worker_logs, name='logs')
+    path('logs/', views.worker_logs, name='logs'),
+    path('favicon.ico', views.favicon)
 ]

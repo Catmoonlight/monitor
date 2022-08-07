@@ -4,11 +4,9 @@
     <list default="true" id="b63f3a87-c83e-4bce-8242-a498ba1a70c8" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/monitor_website/cf_worker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/monitor_website/cf_worker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/monitor_website/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/monitor_website/forms.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/monitor_website/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/monitor_website/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/monitor_website/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/monitor_website/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/monitor_website/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/monitor_website/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/superMonitor/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/superMonitor/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/templates/_last_update.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/templates/_last_update.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/templates/monitor.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/templates/monitor.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/templates/monitor_edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/templates/monitor_edit.html" afterDir="false" />
     </list>
@@ -60,6 +58,18 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$USER_HOME$/AppData/Local/JetBrains/PyCharm2022.1/python_stubs/-779417189/builtins.py" root0="SKIP_INSPECTION" />
+    <setting file="file://$PROJECT_DIR$/src/monitor_website/cf_worker.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/monitor_website/models.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/monitor_website/urls.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/superMonitor/urls.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/templates/_contest_card.html" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/templates/_last_update.html" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/templates/auth.html" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/templates/monitor.html" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/templates/monitor_edit.html" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -224,7 +234,10 @@
       <workItem from="1659506669935" duration="17397000" />
       <workItem from="1659590124657" duration="13811000" />
       <workItem from="1659636262847" duration="2610000" />
-      <workItem from="1659675928030" duration="21415000" />
+      <workItem from="1659675928030" duration="23522000" />
+      <workItem from="1659722596387" duration="3389000" />
+      <workItem from="1659762749663" duration="8289000" />
+      <workItem from="1659867782889" duration="17618000" />
     </task>
     <servers />
   </component>
@@ -275,28 +288,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/monitor_website/views.py</url>
-          <line>175</line>
+          <line>185</line>
           <option name="timeStamp" value="14" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/monitor_website/views.py</url>
-          <line>165</line>
+          <line>175</line>
           <option name="timeStamp" value="15" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/monitor_website/cf_worker.py</url>
-          <line>93</line>
-          <option name="timeStamp" value="16" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/monitor_website/cf_worker.py</url>
-          <line>179</line>
-          <option name="timeStamp" value="19" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/monitor_website/cf_worker.py</url>
-          <line>128</line>
-          <option name="timeStamp" value="20" />
+          <url>file://$PROJECT_DIR$/src/monitor_website/views.py</url>
+          <line>240</line>
+          <option name="timeStamp" value="24" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

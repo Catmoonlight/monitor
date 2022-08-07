@@ -9,7 +9,13 @@
 Убедитесь, что пользователь <span class="font-monospace">cmw</span> является <span class="text-decoration-underline">менеджером соревнований</span> для всех контестов группы.</span>
 Группа: <span class="font-monospace">{{ monitor.group }}</span>
 </p>
-    <p>{% if monitor.contest_set.exists %}{% include '_last_update.html' with last_update=monitor.last_update %}{% else %}<span class="fst-italic">Нужно добавить контесты!</span>{% endif %}</p>
+    <p>
+        {% if monitor.has_errors %}
+            <span class="fst-italic fw-bold">Монитор выгружен ошибками</span>
+        {% elif not monitor.contest_set.exists %}
+            <span class="fst-italic">Нужно добавить контесты!</span>
+        {% endif %}
+    </p>
 
 
 <div class="col-lg-8">
@@ -43,54 +49,37 @@
 </div>
 </div>
 
+{# CONTESTS! #}
 <div class="col-lg-8">
 <div class="row">
 
 {% for contest in contests %}
 <div class="col-md-6 col-lg-4">
-<div class="card mb-4">
-<div class="card-header">
-    <div class="row">
-    <div class="col-10 text-truncate">{{ contest.get_name }}</div>
-    <div class="col-2">
-        <a href="#" class="text-decoration-none" onclick="let x = prompt('Введите новое название (оставьте поле пустым для отмены)'); if (x) { var http = new XMLHttpRequest(); http.open('GET', '{% url 'main:contest_rename' monitor_id=monitor.pk contest_id=contest.cf_contest %}'+'?name='+x, true); http.onload = function() { document.location.reload(); }; http.send(null); } else { return false; }">&#9999;</a>
-    </div>
-    </div>
-</div>
-<div class="card-body">
-    <p class="card-text">
-    {% include '_last_update.html' with last_update=contest.last_status_update %}</p>
-    <div class="progress" style="height: 2px;">
-      <div class="progress-bar bg-light" role="progressbar" style="width: 100%">
-      </div>
-    </div>
-</div>
-<div class="card-footer text-muted">
-<div class="row">
-    <div class="col-3 text-center">
-
-        <a href="{% url 'main:contest_left' monitor_id=monitor.pk contest_id=contest.cf_contest %}" class="text-decoration-none">
-            &#11013;</a>
-    </div>
-    <div class="col-3 text-center">
-        <a href="{% url 'main:contest_refresh' monitor_id=monitor.pk contest_id=contest.cf_contest %}" class="text-decoration-none">&#128260;</a>
-    </div>
-    <div class="col-3 text-center">
-        <a href="{% url 'main:contest_delete' monitor_id=monitor.pk contest_id=contest.cf_contest %}" onclick="if (! confirm('Уверен?')) { return false; }" class="text-decoration-none">&#128465;</a>
-    </div>
-    <div class="col-3 text-center">
-
-        <a href="{% url 'main:contest_right' monitor_id=monitor.pk contest_id=contest.cf_contest %}" class="text-decoration-none">
-            &#10145;</a>
-    </div>
-
-</div>
-</div>
-
-</div>
+{% include '_contest_card.html' with contest=contest w_status=w_status %}
 </div>
 {% endfor %}
     </div></div>
+
+<script>
+function update_cards(card_index) {
+    let cards = document.getElementsByClassName("contest-card")
+    let card = cards.item(card_index % cards.length)
+    let http = new XMLHttpRequest()
+    http.open("GET", "{% url 'main:card_inside' monitor_id=monitor.pk %}" + "?contest=" + card.getAttribute('data-cid'), true);
+
+    http.onreadystatechange = function() {
+        if(http.readyState == XMLHttpRequest.DONE) {
+            if (http.status == 200) {
+                card.innerHTML = http.response
+            }
+            setTimeout(update_cards, 200, card_index + 1)
+        }
+    }
+    http.send();
+}
+
+update_cards(0)
+</script>
 
 <div class="accordion col-lg-8" id="contestsAdd">
   <div class="accordion-item">

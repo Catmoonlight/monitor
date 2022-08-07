@@ -31,6 +31,9 @@ class Monitor(models.Model):
             self.index = self.pk
         super(Monitor, self).save(*args, **kwargs)
 
+    def has_errors(self):
+        return self.contest_set.filter(error_text__isnull=False).exists()
+
 
 class Personality(models.Model):
     monitor = models.ForeignKey(Monitor, on_delete=models.CASCADE)
@@ -85,28 +88,13 @@ class Contest(models.Model):
     cf_contest = models.CharField(max_length=20, verbose_name="Номер контеста")
     human_name = models.TextField(blank=True)
     monitor = models.ForeignKey(Monitor, on_delete=models.CASCADE)
-    last_comment = models.TextField(blank=True)
+    error_text = models.TextField(null=True)
 
     last_status_update = models.DateTimeField(null=True)
     last_ping = models.DateTimeField(null=True)
-    last_big_update = models.DateTimeField(null=True)
 
     class Meta:
         ordering = ['index']
-
-    FRESH = 'FRESH'
-    NORMAL = 'OK'
-    ERROR = 'ERROR'
-
-    status = models.CharField(
-        max_length=10,
-        choices=(
-            (FRESH, "Только что создан"),
-            (NORMAL, "OK"),
-            (ERROR, "Ошибка!")
-        ),
-        default=FRESH
-    )
 
     def get_name(self):
         if self.human_name:
@@ -117,8 +105,7 @@ class Contest(models.Model):
         return f"https://codeforces.com/group/{self.monitor.group}/contest/{self.cf_contest}"
 
     def set_error(self, comment):
-        self.status = self.ERROR
-        self.last_comment = comment
+        self.error_text = comment
         self.save()
 
     def save(self, *args, **kwargs):
@@ -127,7 +114,7 @@ class Contest(models.Model):
         super(Contest, self).save(*args, **kwargs)
 
     def refresh(self):
-        self.status = self.FRESH
         self.problem_set.all().delete()
         self.last_status_update = None
+        self.error_text = None
         self.save()
