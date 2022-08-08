@@ -108,7 +108,6 @@ class CodeforcesWorker:
     PROBLEMS_QUERY = 'contest.standings'
     SEARCH_NEW_STEP = 27
     PING_DELTA = timezone.timedelta(minutes=20)
-    BIG_UPDATE_DELTA = timezone.timedelta(hours=24)
     UPDATE_DELTA = timezone.timedelta(seconds=10)
     NAP_SECONDS = 10
 
@@ -257,7 +256,7 @@ class CodeforcesWorker:
                 ).exclude(last_status_update__gte=timezone.now() - self.UPDATE_DELTA)
 
                 if contests_q.exists():
-                    contest = contests_q.earliest(F('last_status_update').desc(nulls_first=True))
+                    contest = contests_q.order_by(F('last_status_update').asc(nulls_first=True)).first()
 
                     self.log(f'Выбран контест "{contest.get_name()}" ({contest.monitor.human_name}) для обновления')
                     self._process_contest(contest)
