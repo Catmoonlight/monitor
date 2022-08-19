@@ -36,7 +36,9 @@
         {% endfor %}
     </table>
 
-    <a class="btn btn-primary" href="{% url 'prepods:create' %}" role="button">Создать препода</a>
+    <a class="btn btn-primary" href="{% url 'prepods:new_word' %}" role="button">Создать кодовое слово</a>
+
+    <p>Активные кодовые слова: <span class="font-monospace">{{ active_words }}</span></p>
 
     </div>
 {% endblock %}

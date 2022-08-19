@@ -5,8 +5,9 @@ from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
-from prepods.forms import LoginForm, CreationForm
+from prepods.forms import LoginForm, CreationForm, KeyWordForm
 import django.http as http
+from prepods.models import RegisterKeyWord
 
 
 class LoginPrepod(LoginView):
@@ -25,12 +26,26 @@ class LoginPrepod(LoginView):
 class RegisterPrepod(CreateView):
     form_class = CreationForm
     template_name = 'create.html'
-    success_url = reverse_lazy('prepods:admin')
+    success_url = reverse_lazy('main:home')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['heading'] = 'Добавить преподавателя'
         context['title'] = 'Добавить преподавателя'
+        context['return'] = reverse_lazy('main:home')
+        context['return_text'] = 'Вернуться'
+        return context
+
+
+class RegisterWordCreateView(CreateView):
+    form_class = KeyWordForm
+    template_name = 'create.html'
+    success_url = reverse_lazy('prepods:admin')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['heading'] = 'Добавить кодовое слово'
+        context['title'] = 'Добавить кодовое слово'
         context['return'] = reverse_lazy('prepods:admin')
         context['return_text'] = 'Вернуться в админку'
         return context
@@ -78,7 +93,11 @@ def prepods(request: http.HttpRequest):
     if not request.user.is_superuser:
         raise http.Http404()
     users = User.objects.order_by('username').all()
-    context = {'users': users, 'title': 'Админка'}
+    context = {
+        'users': users,
+        'title': 'Админка',
+        'active_words': ', '.join(word.key for word in RegisterKeyWord.objects.all())
+    }
 
     if request.method == 'POST':
         comment, style = prepods_post_process(request.POST)

@@ -1,17 +1,17 @@
 version: '3.8'
 
 services:
-#  web:
-#    build: ./src
-#    command: python manage.py migrate && python manage.py runserver 0.0.0.0:8000
-#    volumes:
-#      - ./src/:/usr/src/app/
-#    ports:
-#      - "8000:8000"
-#    env_file:
-#      - .env
-#    depends_on:
-#      - db
+  web:
+    build: ./src
+    command: gunicorn superMonitor.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - ./src/:/usr/src/app/
+    expose:
+      - 8000
+    env_file:
+      - .env
+    depends_on:
+      - db
   db:
     image: postgres:13.0-alpine
     volumes:

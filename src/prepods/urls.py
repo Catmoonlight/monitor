@@ -7,5 +7,6 @@ urlpatterns = [
     path('login/', views.LoginPrepod.as_view(), name='login'),
     path('logout/', views.logout_prepod, name='logout'),
     path('admin/', views.prepods, name='admin'),
-    path('admin/create', views.RegisterPrepod.as_view(), name='create')
+    path('admin/create', views.RegisterWordCreateView.as_view(), name='new_word'),
+    path('signup/', views.RegisterPrepod.as_view(), name='signup')
 ]

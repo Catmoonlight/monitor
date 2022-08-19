@@ -2,9 +2,9 @@
 {% block main_content %}
 <H1>Мониторы</H1>
 {% if user.is_authenticated %}
-    <div class="text-secondary py-1">  Препод: {{ user.username }}. <a href="{% url 'prepods:logout' %}" class="link-secondary text-decoration-none"> Нажмите, чтобы выйти </a></div>
+    <div class="py-1">  Препод: {{ user.username }}. <a href="{% url 'prepods:logout' %}" class="link-secondary text-decoration-none"> Нажмите, чтобы выйти</a>.</div>
 {% else %}
-    <div class="text-secondary py-1"> Вы препод? <a href="{% url 'prepods:login' %}" class="link-secondary text-decoration-none"> Нажмите, чтобы войти </a></div>
+    <div class="text-secondary py-1"> Вы препод? <a href="{% url 'prepods:login' %}" class="link-secondary text-decoration-none">Войти</a> / <a href="{% url 'prepods:signup' %}" class="link-secondary text-decoration-none">Зарегистрироваться</a></div>
 {% endif %}
 {% if user.is_superuser %}
     <div class="text-secondary py-1"> Вы администратор! <a href="{% url 'prepods:admin' %}" class="link-secondary text-decoration-none"> Нажмите, чтобы войти в админку </a></div>
