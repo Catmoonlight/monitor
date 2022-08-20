@@ -2,7 +2,22 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b63f3a87-c83e-4bce-8242-a498ba1a70c8" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/templates/_monitor_list_admin.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/templates/_monitor_list_clear.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.local.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.local.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/favicon.ico" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/favicon.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/favicon_1.ico" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/monitor_website/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/monitor_website/forms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/monitor_website/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/monitor_website/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/monitor_website/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/monitor_website/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/monitor_website/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/monitor_website/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/templates/_contest_card.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/templates/_contest_card.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/templates/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/templates/home.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/templates/monitor.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/templates/monitor.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/templates/monitor_edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/templates/monitor_edit.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,8 +60,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="HTML File" />
         <option value="Python Script" />
+        <option value="HTML File" />
       </list>
     </option>
   </component>
@@ -74,16 +89,16 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/user/PycharmProjects/superMonitor/src/superMonitor/settings.py&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;terminal&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "DefaultHtmlFileTemplate": "HTML File",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "last_opened_file_path": "C:/Users/user/PycharmProjects/superMonitor/src/templates",
+    "settings.editor.selected.configurable": "terminal"
   }
-}</component>
+}]]></component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
       <console-settings module-name="superMonitor" is-module-sdk="true">
@@ -247,7 +262,9 @@
       <workItem from="1660632091732" duration="1607000" />
       <workItem from="1660836856697" duration="7129000" />
       <workItem from="1660890131777" duration="2866000" />
-      <workItem from="1660910881041" duration="6136000" />
+      <workItem from="1660910881041" duration="8075000" />
+      <workItem from="1660980966460" duration="2254000" />
+      <workItem from="1660991794391" duration="5304000" />
     </task>
     <servers />
   </component>
@@ -292,19 +309,14 @@
           <option name="timeStamp" value="5" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/monitor_website/models.py</url>
-          <line>30</line>
-          <option name="timeStamp" value="10" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/monitor_website/views.py</url>
-          <line>185</line>
-          <option name="timeStamp" value="14" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/monitor_website/views.py</url>
-          <line>175</line>
+          <line>186</line>
           <option name="timeStamp" value="15" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/monitor_website/models.py</url>
+          <line>31</line>
+          <option name="timeStamp" value="17" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -9,21 +9,12 @@
 {% if user.is_superuser %}
     <div class="text-secondary py-1"> Вы администратор! <a href="{% url 'prepods:admin' %}" class="link-secondary text-decoration-none"> Нажмите, чтобы войти в админку </a></div>
 {% endif %}
-<div class="col-md-6 px-md-3 py-4">
-    <div class="list-group">
-    {% for i in monitors %}
-        {% if i.is_hidden %}
-            {% if user.is_authenticated %}
-                <a href="{{ i.get_absolute_url }}" class="list-group-item list-group-item-action list-group-item-light">{{ i.human_name }} (скрыт)</a>
-            {% endif %}
-        {% else %}
-        <a href="{{ i.get_absolute_url }}" class="list-group-item list-group-item-action">{{ i.human_name }} </a>
-        {% endif %}
-    {% endfor %}
-    </div>
 
-</div>
-
+{% if user.is_superuser %}
+{% include '_monitor_list_admin.html' %}
+{% else %}
+{% include '_monitor_list_clear.html' %}
+{% endif %}
 {% if user.is_authenticated %}
     <a class="btn btn-outline-primary" href="{% url 'main:new_monitor' %}" role="button">Создать новый монитор</a>
 {% endif %}

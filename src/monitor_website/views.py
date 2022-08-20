@@ -1,4 +1,5 @@
 import django.http as http
+from django.db import transaction
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
@@ -172,40 +173,67 @@ def edit_refresh_contest(request, monitor_id, contest_id):
     return redirect('main:monitor_edit', monitor_id=monitor_id)
 
 
+def edit_rename_monitor(request, monitor_id):
+    if not request.user.is_authenticated:
+        raise http.Http404()
+    monitor = get_object_or_404(models.Monitor, pk=monitor_id)
+    new_name = request.GET.get('name', monitor.human_name)
+    monitor.human_name = new_name
+    monitor.save()
+    return redirect('main:monitor_edit', monitor_id=monitor_id)
+
+
 def edit_rename_contest(request, monitor_id, contest_id):
     contest = _edit_get_contest(request, monitor_id, contest_id)
-    new_name = request.GET['name']
+    new_name = request.GET.get('name', contest.human_name)
     contest.human_name = new_name
     contest.save()
     return redirect('main:monitor_edit', monitor_id=monitor_id)
 
 
-def edit_move_left_contest(request, monitor_id, contest_id):
-    if not request.user.is_authenticated:
-        raise http.Http404()
-    monitor = get_object_or_404(models.Monitor, pk=monitor_id)
-    all_contests = list(monitor.contest_set.all())
-    for i in range(1, len(all_contests)):
-        if all_contests[i].cf_contest == str(contest_id):
-            all_contests[i].index, all_contests[i-1].index = all_contests[i-1].index, all_contests[i].index
-            all_contests[i].save()
-            all_contests[i-1].save()
-            break
-    return redirect('main:monitor_edit', monitor_id=monitor_id)
-
-
-def edit_move_right_contest(request, monitor_id, contest_id):
+def _edit_move_contest(request, monitor_id, contest_id, addit_index):
     if not request.user.is_authenticated:
         raise http.Http404()
     monitor = get_object_or_404(models.Monitor, pk=monitor_id)
     all_contests = list(monitor.contest_set.all())
     for i in range(len(all_contests) - 1):
-        if all_contests[i].cf_contest == str(contest_id):
-            all_contests[i].index, all_contests[i+1].index = all_contests[i+1].index, all_contests[i].index
-            all_contests[i].save()
-            all_contests[i+1].save()
+        if all_contests[i + addit_index].cf_contest == str(contest_id):
+            with transaction.atomic():
+                all_contests[i].index, all_contests[i+1].index = all_contests[i+1].index, all_contests[i].index
+                all_contests[i].save()
+                all_contests[i+1].save()
             break
     return redirect('main:monitor_edit', monitor_id=monitor_id)
+
+
+def _edit_move_monitor(request, monitor_id, addit_index):
+    if not request.user.is_superuser:
+        raise http.Http404()
+    all_monitors = list(models.Monitor.objects.all())
+    for i in range(len(all_monitors) - 1):
+        if all_monitors[i + addit_index].pk == monitor_id:
+            with transaction.atomic():
+                all_monitors[i].index, all_monitors[i+1].index = all_monitors[i+1].index, all_monitors[i].index
+                all_monitors[i].save()
+                all_monitors[i+1].save()
+            break
+    return redirect('main:home')
+
+
+def edit_move_left_contest(request, monitor_id, contest_id):
+    return _edit_move_contest(request, monitor_id, contest_id, 1)
+
+
+def edit_move_right_contest(request, monitor_id, contest_id):
+    return _edit_move_contest(request, monitor_id, contest_id, 0)
+
+
+def move_up_monitor(request, monitor_id):
+    return _edit_move_monitor(request, monitor_id, 1)
+
+
+def move_down_monitor(request, monitor_id):
+    return _edit_move_monitor(request, monitor_id, 0)
 
 
 def monitors_list_page(request: http.HttpRequest):
@@ -220,7 +248,6 @@ def monitors_list_page(request: http.HttpRequest):
 def worker_logs(request: http.HttpRequest):
     if not request.user.is_authenticated:
         raise http.Http404()
-
     CodeforcesWorker()
     return render(request, 'worker_logs.html', {
         'title': 'Логи воркера',
@@ -228,17 +255,8 @@ def worker_logs(request: http.HttpRequest):
     })
 
 
-def favicon(request):
-    # shitty implementation but ok for now
-    import os
-    path = os.path.join(os.path.dirname(__file__), "../../favicon.ico")
-    print(path)
-    image = open(path, "rb").read()
-    return http.HttpResponse(image, content_type="image/ico")
-
-
 def card_inside(request, monitor_id):
-    contest_id = request.GET.get('contest', 'lol')
+    contest_id = request.GET.get('contest', 'ERROR_NO')
     contest = _edit_get_contest(request, monitor_id, contest_id)
     return render(request, '__card_inside.html', {
         "contest": contest,

@@ -1,7 +1,7 @@
 <div class="card mb-4">
 <div class="card-header {% if contest.error_text %}text-bg-danger{% endif %}">
     <div class="row">
-    <div class="col-10 text-truncate">{{ contest.get_name }}{% if contest.error_text %} (требует обновления){% endif %}</div>
+    <div class="col-10 text-truncate">{% if user.is_superuser %}({{ contest.index }}) {% endif %}{{ contest.get_name }}{% if contest.error_text %} (требует обновления){% endif %}</div>
     <div class="col-2">
         <a href="#" class="text-decoration-none" onclick="let x = prompt('Введите новое название (оставьте поле пустым для отмены)'); if (x) { var http = new XMLHttpRequest(); http.open('GET', '{% url 'main:contest_rename' monitor_id=contest.monitor.pk contest_id=contest.cf_contest %}'+'?name='+x, true); http.onload = function() { document.location.reload(); }; http.send(null); } else { return false; }">&#9999;</a>
     </div>
@@ -9,7 +9,7 @@
 </div>
 <div class="card-body">
     <p class="card-text contest-card" data-cid="{{ contest.cf_contest }}">
-        {% include '__card_inside.html' with contest=contest w_status=w_status %}
+        {% include '__card_inside.html' %}
     </p>
 </div>
 <div class="card-footer text-muted {% if contest.error_text %}text-bg-danger{% endif %}">

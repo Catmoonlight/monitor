@@ -1,12 +1,14 @@
 {% extends 'base.html' %}
 {% block main_content %}
-<H1>Редактирование &laquo;{{ monitor.human_name }}&raquo; </H1>
+<H1>Редактирование &laquo;{{ monitor.human_name }}&raquo;
+<a href="#" class="text-decoration-none" onclick="let x = prompt('Введите новое название (оставьте поле пустым для отмены)'); if (x) { var http = new XMLHttpRequest(); http.open('GET', '{% url 'main:monitor_rename' monitor_id=monitor.pk %}'+'?name='+x, true); http.onload = function() { document.location.reload(); }; http.send(null); } else { return false; }">&#9999;</a>
+</H1>
 <p>
     <a href="{% url 'main:monitor' monitor_id=monitor.pk %}" class="link-secondary text-decoration-none"> &#8617; Выйти из редактирования </a>
 </p>
     <p>
 <span class="fw-semibold">
-Убедитесь, что пользователь <span class="font-monospace">cmw</span> является <span class="text-decoration-underline">менеджером соревнований</span> для всех контестов группы.</span>
+Чтобы монитор работал, нужно добавить пользователя codeforces с ником <span class="font-monospace">cmw</span> в <span class="text-decoration-underline">менеджеры соревнований</span> (обратите внимание - не менеджер группы!) для всех контестов. Это делается во вкладке &laquo;адм.&raquo;.</span>
 Группа: <span class="font-monospace">{{ monitor.group }}</span>
 </p>
     <p>
@@ -55,7 +57,7 @@
 
 {% for contest in contests %}
 <div class="col-md-6 col-lg-4">
-{% include '_contest_card.html' with contest=contest w_status=w_status %}
+{% include '_contest_card.html' %}
 </div>
 {% endfor %}
     </div></div>

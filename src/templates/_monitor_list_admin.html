@@ -1,0 +1,11 @@
+<div class="col-lg-6 px-md-2 py-4">
+    <ul class="list-group">
+    {% for i in monitors %}
+        <li class="list-group-item {% if i.is_hidden %}list-group-item-light{% endif %}">
+            ({{ i.index }}). <a href="{{ i.get_absolute_url }}" class="link-dark">{{ i.human_name }}</a> {% if i.is_hidden %}(скрыт){% endif %}
+            <a href="{% url 'main:monitor_up' monitor_id=i.pk %}" class="text-decoration-none link-dark">&uarr;</a>
+            <a href="{% url 'main:monitor_down' monitor_id=i.pk %}" class="text-decoration-none link-dark">&darr;</a>
+        </li>
+    {% endfor %}
+    </ul>
+</div>

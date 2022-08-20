@@ -1,6 +1,7 @@
 import django.utils.timezone as tz
 from django.db import models
 from django.urls import reverse
+from django.contrib.auth.models import User
 
 
 class Monitor(models.Model):
@@ -27,9 +28,11 @@ class Monitor(models.Model):
         return mn
 
     def save(self, *args, **kwargs):
+        super(Monitor, self).save(*args, **kwargs)
         if self.index is None:
             self.index = self.pk
-        super(Monitor, self).save(*args, **kwargs)
+            super(Monitor, self).save(*args, **kwargs)
+
 
     def has_errors(self):
         return self.contest_set.filter(error_text__isnull=False).exists()
@@ -89,6 +92,9 @@ class Contest(models.Model):
     human_name = models.TextField(blank=True)
     monitor = models.ForeignKey(Monitor, on_delete=models.CASCADE)
     error_text = models.TextField(null=True)
+    # todo
+    # owner = models.ForeignKey(User, to_field='username', default='Catmoonlight', on_delete=models.CASCADE)
+    # editors = models.ManyToManyField(User)
 
     last_status_update = models.DateTimeField(null=True)
     last_ping = models.DateTimeField(null=True)

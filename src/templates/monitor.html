@@ -15,7 +15,7 @@
 {% if monitor.has_errors %}
     <span class="fw-bold">Монитор выгружен ошибками, обратитесь к преподавателю!</span>
 {% elif monitor.contest_set.exists %}
-    {% include '_last_update.html' with last_update=monitor.last_update %}
+    {% include '_last_update.html' %}
 {% else %}
     <span class="fst-italic">Нужно добавить контесты!</span>
 {% endif %}

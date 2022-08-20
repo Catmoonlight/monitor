@@ -4,11 +4,11 @@ services:
   db:
     image: postgres:13.0-alpine
     volumes:
-      - postgres_data:/var/lib/postgresql/data/
+      - local_postgres_data:/var/lib/postgresql/data/
     ports:
       - '5432:5432'
     env_file:
       - .env.db
 
 volumes:
-  postgres_data:
+  local_postgres_data:
