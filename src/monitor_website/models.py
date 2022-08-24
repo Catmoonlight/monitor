@@ -2,6 +2,8 @@ import django.utils.timezone as tz
 from django.db import models
 from django.urls import reverse
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 class Monitor(models.Model):
@@ -114,13 +116,15 @@ class Contest(models.Model):
         self.error_text = comment
         self.save()
 
-    def save(self, *args, **kwargs):
-        if self.index is None:
-            self.index = self.pk
-        super(Contest, self).save(*args, **kwargs)
-
     def refresh(self):
         self.problem_set.all().delete()
         self.last_status_update = None
         self.error_text = None
         self.save()
+
+
+@receiver(post_save, sender=Contest)
+def contest_post_save(sender, instance, created, raw, using, update_fields, **kwargs):
+    if created:
+        instance.index = instance.pk
+        instance.save()
