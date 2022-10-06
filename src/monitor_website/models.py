@@ -12,6 +12,10 @@ class Monitor(models.Model):
     is_old = models.BooleanField(default=False)
     is_hidden = models.BooleanField(default=True)
     index = models.IntegerField(null=True)
+    # todo
+    # owner = models.ForeignKey(User, to_field='username', on_delete=models.CASCADE)
+    # editors = models.ManyToManyField(User)
+
 
     class Meta:
         ordering = ['index']
@@ -35,9 +39,11 @@ class Monitor(models.Model):
             self.index = self.pk
             super(Monitor, self).save(*args, **kwargs)
 
-
     def has_errors(self):
         return self.contest_set.filter(error_text__isnull=False).exists()
+
+    # def can_be_edited_by(self, user: User) -> bool:
+    #    return user.is_superuser or user == self.owner or self.editors.contains(user)
 
 
 class Personality(models.Model):
@@ -54,6 +60,9 @@ class Personality(models.Model):
         if self.is_blacklisted:
             return f"🚫 {name}"
         return name
+
+    def get_cf_url(self):
+        return f"https://codeforces.com/profile/{self.nickname}"
 
 
 class Problem(models.Model):
@@ -94,9 +103,6 @@ class Contest(models.Model):
     human_name = models.TextField(blank=True)
     monitor = models.ForeignKey(Monitor, on_delete=models.CASCADE)
     error_text = models.TextField(null=True)
-    # todo
-    # owner = models.ForeignKey(User, to_field='username', default='Catmoonlight', on_delete=models.CASCADE)
-    # editors = models.ManyToManyField(User)
 
     last_status_update = models.DateTimeField(null=True)
     last_ping = models.DateTimeField(null=True)

@@ -1,0 +1,66 @@
+{% if personalities %}{% include '_last_update.html' with last_update=monitor.last_update %}
+{% else %} <span>&nbsp;</span>{% endif %}
+
+<div class="table-responsive table-rounded-borders">
+    <table class="table table-bordered table-sm">
+        <tr>
+            <th rowspan="2" class="align-middle text-center" style="position: sticky"> # </th>
+            <th rowspan="2" class="align-middle text-center" style="position: sticky"> Участник </th>
+            <th rowspan="2" class="align-middle text-center"> Итог (/{{ total_problems }}) </th>
+            <th rowspan="2" class="align-middle text-center"> &#916; </th>
+            <th rowspan="2" class="align-middle text-center"> Дорешка </th>
+            {% for contest in monitor.contest_set.all %}
+            <th colspan="{{ contest.problem_set.all|length }}" class="text-center">
+            <a href="{{ contest.get_cf_url }}" target="_blank" class="link-dark text-decoration-none"> {{ contest.human_name }} </a></th>
+            {% endfor %}
+        </tr>
+        <tr>
+            {% for contest in monitor.contest_set.all %}
+                {% for problem in contest.problem_set.all %}
+                <td class="text-center font-monospace position-relative" style="min-width: 1cm; width: 1.5cm" data-trigger="focus" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ problem.name }}{% if user.is_authenticated and problem.difficulty %} [{{ problem.difficulty }}]{% endif %}">
+                    <a href="{{ problem.get_cf_url }}" target="_blank" class="stretched-link link-dark text-decoration-none">{{ problem.index }}</a></td>
+                {% endfor %}
+            {% endfor %}
+        </tr>
+        {% if personalities %}
+        {% for index, delta, personality, results, solved, practiced in personalities %}
+        <tr>
+            <td class="text-center" style="white-space:nowrap; position: sticky">{{ index }}</td>
+            <td class="text-center align-middle" style="white-space:nowrap; padding: 0 10px; position: sticky">{{ personality.get_name }} </td>
+            <td class="text-center" style="white-space:nowrap"> {{ solved }} </td>
+            <td class="text-center" style="white-space:nowrap">
+                {% if delta < 0 %} <span class="text-danger">&#9661;{% widthratio delta 1 -1 %}</span>
+                {% elif delta > 0 %} <span class="text-success">&#9651;{{ delta }}</span>
+                {% else %} = {% endif %}
+            </td>
+            <td class="text-center" style="white-space:nowrap"> {% if practiced %} +{{ practiced }} {% else %} 0 {% endif %}</td>
+
+            {% for result, link, submit, _ in results %}
+                {% if link != '#' %}
+                    {% if '+' in result %}
+                        <td class="text-center position-relative {% if submit.is_contest %}table-success {% else %} table-info {% endif %}"
+                        data-bs-toggle="tooltip" data-bs-placement="bottom" data-delay='{"show":"5000", "hide":"3000"}'
+                            title="{{ submit.language }}: {{ submit.verdict }} {{ submit.max_time }}ms">
+                        <a href="{{ link }}" target="_blank" class="stretched-link link-secondary text-decoration-none">
+                        {{ result }}</a></td>
+                    {% else %}
+                        <td class="text-center position-relative">
+                        <a href="{{ link }}" target="_blank" class="stretched-link link-secondary text-decoration-none"
+                        data-bs-toggle="tooltip" data-bs-placement="bottom" data-delay='{"show":"5000", "hide":"3000"}'
+                            title="{{ submit.language }}: {{ submit.verdict }} {{ submit.test_no }}">
+                        {{ result }}</a> </td>
+                    {% endif %}
+                {% else %}
+                    {% if '+' in result %}
+                        <td class="text-center text-secondary {% if submit.is_contest %}table-success {% else %} table-info {% endif %}">
+                        {{ result }}</td>
+                    {% else %}
+                        <td class="text-center text-secondary">{{ result }}</td>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        </tr>
+        {% endfor %}
+        {% endif %}
+    </table>
+</div>

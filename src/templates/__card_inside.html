@@ -1,7 +1,7 @@
 {% if w_status.contest == contest %}
 <span class="fst-italic">{{ w_status.comment }}</span>
 {% elif contest.error_text %}
-{{ contest.error_text }}
+Ошибка {{ contest.error_text }}
 {% else %}
 {% include '_last_update.html' with last_update=contest.last_status_update %}
 {% endif %}

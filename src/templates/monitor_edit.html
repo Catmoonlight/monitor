@@ -134,7 +134,7 @@ update_cards(0)
           </tr>
           {% for pers in personals %}
           <tr>
-          <td class="align-middle text-center">{{ pers.nickname }}</td>
+              <td class="align-middle text-center"><a href="{{ pers.get_cf_url }}" target="_blank" class="link-dark text-decoration-none">{{ pers.nickname }}</a></td>
           <td class="align-middle text-center">
                 <input type="text" name="{{ pers.nickname }}_real_name" aria-label="Имя {{ pers.nickname }}" value="{{ pers.real_name }}" class="form-control">
           </td>

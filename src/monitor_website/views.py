@@ -9,13 +9,14 @@ import monitor_website.models as models
 import monitor_website.forms as forms
 
 from monitor_website.cf_worker import CodeforcesWorker, ping
+from .monitor_gen import MonitorGenerator
 
 
 def auth_or_404(function):
     def new_func(request, *args, **kwargs):
         if not request.user.is_authenticated:
             raise http.Http404()
-        function(request, *args, **kwargs)
+        return function(request, *args, **kwargs)
     return new_func
 
 
@@ -32,69 +33,23 @@ class NewMonitorView(LoginRequiredMixin, CreateView):
         return context
 
 
+def monitor_inside(request: http.HttpRequest, monitor_id):
+    monitor = get_object_or_404(models.Monitor, pk=monitor_id)
+    problem_list, personalities = MonitorGenerator.gen(monitor, request.user.is_authenticated)
+    return render(request, '_monitor.html', {
+        'monitor': monitor,
+        'total_problems': len(problem_list),
+        'personalities': personalities,
+    })
+
+
 def monitor_page(request: http.HttpRequest, monitor_id):
     monitor = get_object_or_404(models.Monitor, pk=monitor_id)
     ping(monitor)
 
-    problem_list = []
-    for contest in monitor.contest_set.all():
-        problem_list += list(contest.problem_set.all())
-
-    results = {}
-    contest_solved = {}
-    practiced = {}
-
-    for person in monitor.personality_set.filter(is_blacklisted=False).all():
-        results[person] = []
-        contest_solved[person] = 0
-        practiced[person] = 0
-
-        d_c = {}
-
-        for submit in person.submit_set.order_by('submission_time').all():
-            if submit.problem not in d_c:
-                d_c[submit.problem] = ('', '#', None, 0)
-            if d_c[submit.problem][0].startswith('+'):
-                continue
-
-            c = d_c[submit.problem][-1]
-            if submit.verdict == submit.OK:
-                d_c[submit.problem] = ('+' if c == 0 else f'+{c}',
-                                       submit.get_cf_url() if request.user.is_authenticated else '#',
-                                       submit, c)
-                if submit.is_contest:
-                    contest_solved[person] += 1
-                else:
-                    practiced[person] += 1
-            else:
-                d_c[submit.problem] = (f'-{c + 1}', submit.get_cf_url() if request.user.is_authenticated else '#',
-                                       submit, c + 1)
-
-        for problem in problem_list:
-            if problem in d_c:
-                results[person] += [d_c[problem]]
-            else:
-                results[person] += [('', '#', None, 0)]
-
-    personalities = list(results.items())
-
-    places = sorted([(contest_solved[person] + practiced[person], contest_solved[person])
-                     for person, _ in personalities])[::-1]
-    contest_places = sorted([contest_solved[person] for person, _ in personalities])[::-1]
-
-    personalities.sort(key=lambda x: (-contest_solved[x[0]] - practiced[x[0]], -contest_solved[x[0]]))
-    for i in range(len(personalities)):
-        person = personalities[i][0]
-        index = places.index((contest_solved[person] + practiced[person], contest_solved[person])) + 1
-        c_index = contest_places.index(contest_solved[person]) + 1
-        personalities[i] = (index, c_index - index, person, personalities[i][1],
-                            contest_solved[person] + practiced[person], practiced[person])
-
     return render(request, "monitor.html", {
         'title': monitor.human_name,
         'monitor': monitor,
-        'total_problems': len(problem_list),
-        'personalities': personalities,
     })
 
 
@@ -173,9 +128,8 @@ def edit_refresh_contest(request, monitor_id, contest_id):
     return redirect('main:monitor_edit', monitor_id=monitor_id)
 
 
+@auth_or_404
 def edit_rename_monitor(request, monitor_id):
-    if not request.user.is_authenticated:
-        raise http.Http404()
     monitor = get_object_or_404(models.Monitor, pk=monitor_id)
     new_name = request.GET.get('name', monitor.human_name)
     monitor.human_name = new_name
@@ -191,31 +145,30 @@ def edit_rename_contest(request, monitor_id, contest_id):
     return redirect('main:monitor_edit', monitor_id=monitor_id)
 
 
+def __swap(lst, i):
+    with transaction.atomic():
+        lst[i].index, lst[i + 1].index = lst[i + 1].index, lst[i].index
+        lst[i].save()
+        lst[i + 1].save()
+
+
+@auth_or_404
 def _edit_move_contest(request, monitor_id, contest_id, addit_index):
-    if not request.user.is_authenticated:
-        raise http.Http404()
     monitor = get_object_or_404(models.Monitor, pk=monitor_id)
     all_contests = list(monitor.contest_set.all())
     for i in range(len(all_contests) - 1):
         if all_contests[i + addit_index].cf_contest == str(contest_id):
-            with transaction.atomic():
-                all_contests[i].index, all_contests[i+1].index = all_contests[i+1].index, all_contests[i].index
-                all_contests[i].save()
-                all_contests[i+1].save()
+            __swap(all_contests, i)
             break
     return redirect('main:monitor_edit', monitor_id=monitor_id)
 
 
+@auth_or_404
 def _edit_move_monitor(request, monitor_id, addit_index):
-    if not request.user.is_superuser:
-        raise http.Http404()
     all_monitors = list(models.Monitor.objects.all())
     for i in range(len(all_monitors) - 1):
         if all_monitors[i + addit_index].pk == monitor_id:
-            with transaction.atomic():
-                all_monitors[i].index, all_monitors[i+1].index = all_monitors[i+1].index, all_monitors[i].index
-                all_monitors[i].save()
-                all_monitors[i+1].save()
+            __swap(all_monitors, i)
             break
     return redirect('main:home')
 
@@ -236,13 +189,21 @@ def move_down_monitor(request, monitor_id):
     return _edit_move_monitor(request, monitor_id, 0)
 
 
-def monitors_list_page(request: http.HttpRequest):
+def monitors_list_page(request: http.HttpRequest, render_admin=False):
+    if render_admin and not request.user.is_superuser:
+        render_admin = None
     CodeforcesWorker()
-
     return render(request, "home.html", {
+        'render_admin': render_admin,
         'title': "Мониторы",
         'monitors': models.Monitor.objects.all(),
     })
+
+
+def monitors_index_page(request: http.HttpRequest):
+    if request.user.is_superuser:
+        return monitors_list_page(request, True)
+    return redirect('main:monitor_list')
 
 
 def worker_logs(request: http.HttpRequest):

@@ -10,7 +10,7 @@
     <div class="text-secondary py-1"> Вы администратор! <a href="{% url 'prepods:admin' %}" class="link-secondary text-decoration-none"> Нажмите, чтобы войти в админку </a></div>
 {% endif %}
 
-{% if user.is_superuser %}
+{% if render_admin %}
 {% include '_monitor_list_admin.html' %}
 {% else %}
 {% include '_monitor_list_clear.html' %}

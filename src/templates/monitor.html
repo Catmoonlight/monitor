@@ -15,80 +15,35 @@
 {% if monitor.has_errors %}
     <span class="fw-bold">Монитор выгружен ошибками, обратитесь к преподавателю!</span>
 {% elif monitor.contest_set.exists %}
-    {% include '_last_update.html' with last_update=monitor.last_update %}
+    <div class="px-md-3 py-3" id="monitor_place">
+        {% include '_monitor.html' %}
+        <div class="py-3 text-center text-muted">
+            <span class="display-6"> Генерируем монитор... </span>
+            <span class="spinner-border" role="status"> </span>
+        </div>
+    </div>
+    <script>
+    let monitor_place = document.getElementById('monitor_place')
+    let http = new XMLHttpRequest()
+    http.open("GET", "{% url 'main:monitor_inside' monitor_id=monitor.pk %}", true);
+
+    http.onreadystatechange = function() {
+        if(http.readyState == XMLHttpRequest.DONE) {
+            if (http.status == 200) {
+                monitor_place.innerHTML = http.response
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                  return new bootstrap.Tooltip(tooltipTriggerEl)
+                })
+            }
+            else {
+                monitor_place.innerHTML = '<div class="py-3 text-center"><span class="display-6"> Что-то пошло не так... &#128546; </span></div>'
+            }
+        }
+    }
+    http.send();
+    </script>
 {% else %}
     <span class="fst-italic">Нужно добавить контесты!</span>
 {% endif %}
-
-<div class="px-md-3 py-2">
-<div class="table-responsive table-rounded-borders">
-
-    <table class="table table-bordered table-sm">
-        <tr>
-            <th rowspan="2" class="align-middle text-center"> # </th>
-            <th rowspan="2" class="align-middle text-center"> Участник </th>
-            <th rowspan="2" class="align-middle text-center"> Итог (/{{ total_problems }}) </th>
-            <th rowspan="2" class="align-middle text-center"> &#916; </th>
-            <th rowspan="2" class="align-middle text-center"> Дорешка </th>
-            {% for contest in monitor.contest_set.all %}
-            <th colspan="{{ contest.problem_set.all|length }}" class="text-center">
-            <a href="{{ contest.get_cf_url }}" target="_blank" class="link-dark text-decoration-none"> {{ contest.human_name }} </a></th>
-            {% endfor %}
-        </tr>
-        <tr>
-            {% for contest in monitor.contest_set.all %}
-                {% for problem in contest.problem_set.all %}
-                <td class="text-center font-monospace position-relative" style="min-width: 1cm" data-trigger="focus" data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ problem.name }}{% if user.is_authenticated and problem.difficulty %} [{{ problem.difficulty }}]{% endif %}">
-                    <a href="{{ problem.get_cf_url }}" target="_blank" class="stretched-link link-dark text-decoration-none">{{ problem.index }}</a></td>
-                {% endfor %}
-            {% endfor %}
-        </tr>
-        {% for index, delta, personality, results, solved, practiced in personalities %}
-        <tr>
-            <td class="text-center" style="white-space:nowrap">{{ index }}</td>
-            <td class="text-center align-middle" style="white-space:nowrap; padding: 0 10px"> {{ personality.get_name }} </td>
-            <td class="text-center" style="white-space:nowrap"> {{ solved }} </td>
-            <td class="text-center" style="white-space:nowrap">
-                {% if delta < 0 %} <span class="text-danger">&#9661;{% widthratio delta 1 -1 %}</span>
-                {% elif delta > 0 %} <span class="text-success">&#9651;{{ delta }}</span>
-                {% else %} = {% endif %}
-            </td>
-            <td class="text-center" style="white-space:nowrap"> {% if practiced %} +{{ practiced }} {% else %} 0 {% endif %}</td>
-
-            {% for result, link, submit, _ in results %}
-                {% if link != '#' %}
-                    {% if '+' in result %}
-                        <td class="text-center position-relative {% if submit.is_contest %}table-success {% else %} table-info {% endif %}"
-                        data-bs-toggle="tooltip" data-bs-placement="bottom" data-delay='{"show":"5000", "hide":"3000"}'
-                            title="{{ submit.language }}: {{ submit.verdict }} {{ submit.max_time }}ms">
-                        <a href="{{ link }}" target="_blank" class="stretched-link link-secondary text-decoration-none">
-                        {{ result }}</a></td>
-                    {% else %}
-                        <td class="text-center position-relative">
-                        <a href="{{ link }}" target="_blank" class="stretched-link link-secondary text-decoration-none"
-                        data-bs-toggle="tooltip" data-bs-placement="bottom" data-delay='{"show":"5000", "hide":"3000"}'
-                            title="{{ submit.language }}: {{ submit.verdict }} {{ submit.test_no }}">
-                        {{ result }}</a> </td>
-                    {% endif %}
-                {% else %}
-                    {% if '+' in result %}
-                        <td class="text-center text-secondary {% if submit.is_contest %}table-success {% else %} table-info {% endif %}">
-                        {{ result }}</td>
-                    {% else %}
-                        <td class="text-center text-secondary">{{ result }}</td>
-                    {% endif %}
-                {% endif %}
-            {% endfor %}
-        </tr>
-        {% endfor %}
-    </table>
-</div>
-</div>
-
-    <script>
-var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-  return new bootstrap.Tooltip(tooltipTriggerEl)
-})
-    </script>
 {% endblock %}
