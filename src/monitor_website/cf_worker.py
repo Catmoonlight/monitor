@@ -108,7 +108,6 @@ class CodeforcesWorker:
     PROBLEMS_QUERY = 'contest.standings'
     SEARCH_NEW_STEP = 27
     PING_DELTA = timezone.timedelta(minutes=20)
-    UPDATE_DELTA = timezone.timedelta(seconds=10)
     NAP_SECONDS = 10
 
     VERDICTS = {
@@ -134,7 +133,7 @@ class CodeforcesWorker:
         return cls._instance
 
     def __init__(self):
-        self._iters = 20
+        self._iters = 100000
 
         if not hasattr(self, "_worker") or not self._worker.is_alive():
             self._worker = threading.Thread(target=self.start)
@@ -253,7 +252,7 @@ class CodeforcesWorker:
                     monitor__is_old=False,
                     error_text__isnull=True,
                     last_ping__gte=timezone.now() - self.PING_DELTA
-                ).exclude(last_status_update__gte=timezone.now() - self.UPDATE_DELTA)
+                )
 
                 if contests_q.exists():
                     contest = contests_q.order_by(F('last_status_update').asc(nulls_first=True)).first()
@@ -263,7 +262,7 @@ class CodeforcesWorker:
 
                     contest.last_status_update = timezone.now()
                     self.set_status()
-                    contest.save()
+                    contest.save(update_fields=['last_status_update'])
                 else:
                     self.log(f'Воркер не нашел работы и пошел спать')
                     time.sleep(self.NAP_SECONDS)
@@ -293,5 +292,5 @@ class CodeforcesWorker:
 def ping(monitor: models.Monitor):
     for contest in monitor.contest_set.all():
         contest.last_ping = timezone.now()
-        contest.save()
+        contest.save(update_fields=['last_ping'])
     CodeforcesWorker()

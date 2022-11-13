@@ -120,17 +120,17 @@ class Contest(models.Model):
 
     def set_error(self, comment):
         self.error_text = comment
-        self.save()
+        self.save(update_fields=['error_text'])
 
     def refresh(self):
         self.problem_set.all().delete()
         self.last_status_update = None
         self.error_text = None
-        self.save()
+        self.save(update_fields=['last_status_update, error_text'])
 
 
 @receiver(post_save, sender=Contest)
 def contest_post_save(sender, instance, created, raw, using, update_fields, **kwargs):
     if created:
         instance.index = instance.pk
-        instance.save()
+        instance.save(update_fields=['index'])

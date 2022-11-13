@@ -35,7 +35,9 @@ class NewMonitorView(LoginRequiredMixin, CreateView):
 
 def monitor_inside(request: http.HttpRequest, monitor_id):
     monitor = get_object_or_404(models.Monitor, pk=monitor_id)
+    ping(monitor)
     problem_list, personalities = MonitorGenerator.gen(monitor, request.user.is_authenticated)
+
     return render(request, '_monitor.html', {
         'monitor': monitor,
         'total_problems': len(problem_list),
@@ -133,7 +135,7 @@ def edit_rename_monitor(request, monitor_id):
     monitor = get_object_or_404(models.Monitor, pk=monitor_id)
     new_name = request.GET.get('name', monitor.human_name)
     monitor.human_name = new_name
-    monitor.save()
+    monitor.save(update_fields=['human_name'])
     return redirect('main:monitor_edit', monitor_id=monitor_id)
 
 
@@ -141,15 +143,15 @@ def edit_rename_contest(request, monitor_id, contest_id):
     contest = _edit_get_contest(request, monitor_id, contest_id)
     new_name = request.GET.get('name', contest.human_name)
     contest.human_name = new_name
-    contest.save()
+    contest.save(update_fields=['human_name'])
     return redirect('main:monitor_edit', monitor_id=monitor_id)
 
 
 def __swap(lst, i):
     with transaction.atomic():
         lst[i].index, lst[i + 1].index = lst[i + 1].index, lst[i].index
-        lst[i].save()
-        lst[i + 1].save()
+        lst[i].save(update_fields=['index'])
+        lst[i + 1].save(update_fields=['index'])
 
 
 @auth_or_404
