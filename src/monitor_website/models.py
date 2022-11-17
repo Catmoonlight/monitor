@@ -126,7 +126,7 @@ class Contest(models.Model):
         self.problem_set.all().delete()
         self.last_status_update = None
         self.error_text = None
-        self.save(update_fields=['last_status_update, error_text'])
+        self.save(update_fields=['last_status_update', 'error_text'])
 
 
 @receiver(post_save, sender=Contest)

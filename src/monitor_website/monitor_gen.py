@@ -1,62 +1,101 @@
-from .models import Monitor
+from collections import defaultdict
+
+from .models import Monitor, Personality, Problem, Submit
+from django.utils import timezone
+
+
+class TableCell:
+    def __init__(self):
+        self._submits: list[Submit] = []
+        self.first_success = 0
+
+    def _clean_up(self):
+        self._submits.sort()
+        self.first_success = 0
+        while self.first_success < len(self._submits) and self._submits[self.first_success].verdict != Submit.OK:
+            self.first_success += 1
+
+    def add_submit(self, submit: Submit):
+        self._submits.append(submit)
+        if len(self._submits) > 1 and self._submits[-2].submission_time > submit.submission_time:
+            self._clean_up()
+        elif self.first_success == len(self._submits) - 1 and submit.verdict != Submit.OK:
+            self.first_success += 1
+
+    def remove_until(self, datetime: timezone.datetime):
+        while self._submits and self._submits[-1].submission_time > datetime:
+            self._submits.pop()
+        self.first_success = min(self.first_success, len(self._submits))
+
+    def get_result(self) -> (int or None, Submit or None):
+        if len(self._submits) == 0:
+            return None, None
+        elif self.first_success >= len(self._submits):
+            return self.first_success, self._submits[-1]
+        else:
+            return self.first_success, self._submits[self.first_success]
 
 
 class MonitorGenerator:
 
+    _raw_tables: dict[Monitor, dict[(Personality, Problem), TableCell]] = defaultdict(lambda: defaultdict(TableCell))
+    _last_updates: dict[Monitor, timezone.datetime] = defaultdict(lambda: timezone.make_aware(timezone.datetime.min))
+    _last_big_updates: dict[Monitor, timezone.datetime] = defaultdict(lambda: timezone.make_aware(timezone.datetime.min))
+    BIG_UPDATE_PENALTY = timezone.timedelta(minutes=15)
+
     @classmethod
-    def gen(cls, monitor: Monitor, is_authenticated):
+    def __update_table(cls,
+                       table: dict[(Personality, Problem), TableCell],
+                       personalities: list[Personality],
+                       problem_list: list[Problem],
+                       from_time: timezone.datetime
+                       ):
+
+        for person in personalities:
+            for problem in problem_list:
+                table[(person, problem)].remove_until(from_time)
+
+            query = person.submit_set.filter(submission_time__gt=from_time).order_by('submission_time')
+
+            for submit in query.all():
+                table[(person, submit.problem)].add_submit(submit)
+
+    @classmethod
+    def gen(cls, monitor: Monitor):
         problem_list = []
         for contest in monitor.contest_set.all():
             problem_list += list(contest.problem_set.all())
+        personalities = monitor.personality_set.filter(is_blacklisted=False).all()
+        table = cls._raw_tables[monitor]
 
-        results = {}
-        contest_solved = {}
-        practiced = {}
+        if cls._last_big_updates[monitor] + cls.BIG_UPDATE_PENALTY < timezone.now():
+            cls.__update_table(table, personalities, problem_list, timezone.make_aware(timezone.datetime.min))
+            cls._last_big_updates[monitor] = cls._last_updates[monitor] = timezone.now()
+        else:
+            cls.__update_table(table, personalities, problem_list, cls._last_updates[monitor])
+            cls._last_updates[monitor] = timezone.now()
 
-        for person in monitor.personality_set.filter(is_blacklisted=False).all():
-            results[person] = []
-            contest_solved[person] = 0
-            practiced[person] = 0
+        result = []
 
-            d_c = {}
-
-            for submit in person.submit_set.order_by('submission_time').all():
-                if submit.problem not in d_c:
-                    d_c[submit.problem] = ('', '#', None, 0)
-                if d_c[submit.problem][0].startswith('+'):
-                    continue
-
-                c = d_c[submit.problem][-1]
-                if submit.verdict == submit.OK:
-                    d_c[submit.problem] = ('+' if c == 0 else f'+{c}',
-                                           submit.get_cf_url() if is_authenticated else '#',
-                                           submit, c)
-                    if submit.is_contest:
-                        contest_solved[person] += 1
-                    else:
-                        practiced[person] += 1
-                else:
-                    d_c[submit.problem] = (f'-{c + 1}', submit.get_cf_url() if is_authenticated else '#',
-                                           submit, c + 1)
+        for person in personalities:
+            # todo: rewrite this shit
+            table_row = [0, 0, person, [], 0, 0]
 
             for problem in problem_list:
-                if problem in d_c:
-                    results[person] += [d_c[problem]]
+                count, submit = table[(person, problem)].get_result()
+                if submit is None:
+                    table_row[3].append(('', '#', None))
                 else:
-                    results[person] += [('', '#', None, 0)]
+                    table_row[3].append((count, submit.get_cf_url(), submit))
+                    if submit.verdict == submit.OK:
+                        if not submit.is_contest:
+                            table_row[5] += 1
+                        table_row[4] += 1
 
-        personalities = list(results.items())
+            result.append(table_row)
 
-        places = sorted([(contest_solved[person] + practiced[person], contest_solved[person])
-                         for person, _ in personalities])[::-1]
-        contest_places = sorted([contest_solved[person] for person, _ in personalities])[::-1]
+        for r in result:
+            r[0] = len([p for p in result if p[4] > r[4]]) + 1
+            r[1] = r[0] - len([p for p in result if p[4] - p[5] > r[4] - r[5]]) + 1
 
-        personalities.sort(key=lambda x: (-contest_solved[x[0]] - practiced[x[0]], -contest_solved[x[0]]))
-        for i in range(len(personalities)):
-            person = personalities[i][0]
-            index = places.index((contest_solved[person] + practiced[person], contest_solved[person])) + 1
-            c_index = contest_places.index(contest_solved[person]) + 1
-            personalities[i] = (index, c_index - index, person, personalities[i][1],
-                                contest_solved[person] + practiced[person], practiced[person])
-
-        return problem_list, personalities
+        return problem_list, sorted(result, key=lambda x: x[:2])

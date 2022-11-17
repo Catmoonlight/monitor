@@ -36,7 +36,7 @@ class NewMonitorView(LoginRequiredMixin, CreateView):
 def monitor_inside(request: http.HttpRequest, monitor_id):
     monitor = get_object_or_404(models.Monitor, pk=monitor_id)
     ping(monitor)
-    problem_list, personalities = MonitorGenerator.gen(monitor, request.user.is_authenticated)
+    problem_list, personalities = MonitorGenerator.gen(monitor)
 
     return render(request, '_monitor.html', {
         'monitor': monitor,
