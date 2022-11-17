@@ -35,27 +35,27 @@
             </td>
             <td class="text-center" style="white-space:nowrap"> {% if practiced %} +{{ practiced }} {% else %} 0 {% endif %}</td>
 
-            {% for result, link, submit, _ in results %}
-                {% if link != '#' %}
-                    {% if '+' in result %}
+            {% for penalty, link, submit in results %}
+                {% if user.is_authenticated and submit %}
+                    {% if submit.verdict == submit.OK %}
                         <td class="text-center position-relative {% if submit.is_contest %}table-success {% else %} table-info {% endif %}"
                         data-bs-toggle="tooltip" data-bs-placement="bottom" data-delay='{"show":"5000", "hide":"3000"}'
                             title="{{ submit.language }}: {{ submit.verdict }} {{ submit.max_time }}ms">
-                        <a href="{{ link }}" target="_blank" class="stretched-link link-secondary text-decoration-none">
-                        {{ result }}</a></td>
+                        <a href="{{ submit.get_cf_url }}" target="_blank" class="stretched-link link-secondary text-decoration-none">
+                        +{% if penalty > 0 %}{{ penalty }}{% endif %}</a></td>
                     {% else %}
                         <td class="text-center position-relative">
-                        <a href="{{ link }}" target="_blank" class="stretched-link link-secondary text-decoration-none"
+                        <a href="{{ submit.get_cf_url }}" target="_blank" class="stretched-link link-secondary text-decoration-none"
                         data-bs-toggle="tooltip" data-bs-placement="bottom" data-delay='{"show":"5000", "hide":"3000"}'
                             title="{{ submit.language }}: {{ submit.verdict }} {{ submit.test_no }}">
-                        {{ result }}</a> </td>
+                        {% if penalty > 0 %}-{{ penalty }}{% endif %}</a> </td>
                     {% endif %}
                 {% else %}
-                    {% if '+' in result %}
+                    {% if submit and submit.verdict == submit.OK %}
                         <td class="text-center text-secondary {% if submit.is_contest %}table-success {% else %} table-info {% endif %}">
-                        {{ result }}</td>
+                        +{% if penalty > 0 %}{{ penalty }}{% endif %}</td>
                     {% else %}
-                        <td class="text-center text-secondary">{{ result }}</td>
+                        <td class="text-center text-secondary">{% if penalty > 0 %}-{{ penalty }}{% endif %}</td>
                     {% endif %}
                 {% endif %}
             {% endfor %}
