@@ -39,9 +39,9 @@ class TableCell:
 class MonitorGenerator:
 
     _raw_tables: dict[Monitor, dict[(Personality, Problem), TableCell]] = defaultdict(lambda: defaultdict(TableCell))
-    _last_updates: dict[Monitor, timezone.datetime] = defaultdict(lambda: timezone.make_aware(timezone.datetime.min))
-    _last_big_updates: dict[Monitor, timezone.datetime] = defaultdict(lambda: timezone.make_aware(timezone.datetime.min))
-    BIG_UPDATE_PENALTY = timezone.timedelta(minutes=15)
+    _last_updates: dict[Monitor, timezone.datetime] = defaultdict(lambda: MonitorGenerator.DEFAULT_DATETIME)
+    DEFAULT_DELTA = timezone.timedelta(minutes=30)
+    DEFAULT_DATETIME = timezone.make_aware(timezone.datetime.min + DEFAULT_DELTA)
 
     @classmethod
     def __update_table(cls,
@@ -68,12 +68,8 @@ class MonitorGenerator:
         personalities = monitor.personality_set.filter(is_blacklisted=False).all()
         table = cls._raw_tables[monitor]
 
-        if cls._last_big_updates[monitor] + cls.BIG_UPDATE_PENALTY < timezone.now():
-            cls.__update_table(table, personalities, problem_list, timezone.make_aware(timezone.datetime.min))
-            cls._last_big_updates[monitor] = cls._last_updates[monitor] = timezone.now()
-        else:
-            cls.__update_table(table, personalities, problem_list, cls._last_updates[monitor])
-            cls._last_updates[monitor] = timezone.now()
+        cls.__update_table(table, personalities, problem_list, cls._last_updates[monitor] - cls.DEFAULT_DELTA)
+        cls._last_updates[monitor] = timezone.now()
 
         result = []
 
@@ -98,4 +94,8 @@ class MonitorGenerator:
             r[0] = len([p for p in result if p[4] > r[4]]) + 1
             r[1] = r[0] - len([p for p in result if p[4] - p[5] > r[4] - r[5]]) + 1
 
-        return problem_list, sorted(result, key=lambda x: x[:2])
+        return sorted(result, key=lambda x: x[:2]), problem_list
+
+    @classmethod
+    def refresh(cls, monitor: Monitor):
+        cls._last_updates[monitor] = cls.DEFAULT_DATETIME

@@ -86,7 +86,7 @@ update_cards(0)
 <div class="accordion col-lg-8" id="contestsAdd">
   <div class="accordion-item">
     <h2 class="accordion-header" id="headingAdd">
-      <button class="accordion-button {% if creation_form.errors %} bg-warning text-black {% else %} collapsed btn btn-primary {% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAdd" aria-expanded="false" aria-controls="collapseAdd">
+      <button class="accordion-button fw-semibold {% if creation_form.errors %} bg-warning text-black {% else %} collapsed btn btn-primary {% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAdd" aria-expanded="false" aria-controls="collapseAdd">
           Добавить контест
       </button>
     </h2>
@@ -114,7 +114,7 @@ update_cards(0)
 <div class="accordion col-lg-8" id="participants">
 <div class="accordion-item">
 <h2 class="accordion-header" id="headingP">
-  <button class="accordion-button collapsed btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseP" aria-expanded="false" aria-controls="collapseP">
+  <button class="accordion-button collapsed btn btn-primary fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseP" aria-expanded="false" aria-controls="collapseP">
       Участники
   </button>
 </h2>
@@ -124,29 +124,35 @@ update_cards(0)
   <p>Участники и их посылки загружаются автоматически, после загрузки контестов</p>
 
       <form method="post">
-    {% csrf_token %}
-    <input type="hidden" name="query_type" value="update_pers">
-      <table class="table table-bordered table-sm">
-          <tr>
-              <th class="align-middle text-center">Ник</th>
-              <th class="align-middle text-center">Имя</th>
-              <th class="align-middle text-center">В мониторе?</th>
-          </tr>
-          {% for pers in personals %}
-          <tr>
-              <td class="align-middle text-center"><a href="{{ pers.get_cf_url }}" target="_blank" class="link-dark text-decoration-none">{{ pers.nickname }}</a></td>
-          <td class="align-middle text-center">
-                <input type="text" name="{{ pers.nickname }}_real_name" aria-label="Имя {{ pers.nickname }}" value="{{ pers.real_name }}" class="form-control">
-          </td>
-          <td class="align-middle text-center">
-             <input type="checkbox" class="form-check-input"
-             name="{{ pers.nickname }}_is_whitelisted" aria-label="is whitelisted?" {% if not pers.is_blacklisted %}checked{% endif %}>
-          </td>
-          </tr>
-          {% endfor %}
-      </table>
-              <button type="submit" class="btn btn-outline-success">ОК</button>
+        {% csrf_token %}
+        <input type="hidden" name="query_type" value="update_pers">
+        <div class="table-rounded-borders mb-4" style="height: 15em !important; overflow-y: scroll;">
+            <table class="table table-bordered table-sm">
+              <tr>
+                  <th class="align-middle text-center">Ник</th>
+                  <th class="align-middle text-center">Имя</th>
+                  <th class="align-middle text-center">В мониторе?</th>
+              </tr>
+              {% for pers in personals %}
+              <tr>
+                  <td class="align-middle text-center"><a href="{{ pers.get_cf_url }}" target="_blank" class="link-dark text-decoration-none">{{ pers.nickname }}</a></td>
+              <td class="align-middle text-center">
+                    <input type="text" name="{{ pers.nickname }}_real_name" aria-label="Имя {{ pers.nickname }}" value="{{ pers.real_name }}" class="form-control">
+              </td>
+              <td class="align-middle text-center">
+                 <input type="checkbox" class="form-check-input"
+                 name="{{ pers.nickname }}_is_whitelisted" aria-label="is whitelisted?" {% if not pers.is_blacklisted %}checked{% endif %}>
+              </td>
+              </tr>
+              {% endfor %}
+          </table>
+        </div>
 
+        <div class="text-end">
+            <button type="submit" class="btn btn-success">Сохранить изменения</button>
+            <a href="{% url "main:add_all_people" monitor_id=monitor.pk %}" class="btn btn-outline-primary" onclick="if (! confirm('Уверен?')) { return false; }">Добавить всех</a>
+            <a href="{% url "main:remove_all_people" monitor_id=monitor.pk %}" class="btn btn-outline-secondary" onclick="if (! confirm('Уверен?')) { return false; }">Убрать всех</a>
+        </div>
       </form>
 
   </div>

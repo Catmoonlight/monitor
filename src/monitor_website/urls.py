@@ -17,6 +17,8 @@ urlpatterns = [
     path('monitor/<int:monitor_id>/edit/right/<int:contest_id>/', views.edit_move_right_contest, name="contest_right"),
     path('monitor/<int:monitor_id>/edit/rename/<int:contest_id>/', views.edit_rename_contest, name="contest_rename"),
     path('monitor/<int:monitor_id>/edit/monitor_rename/', views.edit_rename_monitor, name="monitor_rename"),
+    path('monitor/<int:monitor_id>/edit/set_all', views.edit_add_all_people, name="add_all_people"),
+    path('monitor/<int:monitor_id>/edit/remove_all', views.edit_remove_all_people, name="remove_all_people"),
 
     path('logs/', views.worker_logs, name='logs'),
     path('hidden/<int:monitor_id>/card/', views.card_inside, name='card_inside'),

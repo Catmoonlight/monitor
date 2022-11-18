@@ -36,7 +36,7 @@ class NewMonitorView(LoginRequiredMixin, CreateView):
 def monitor_inside(request: http.HttpRequest, monitor_id):
     monitor = get_object_or_404(models.Monitor, pk=monitor_id)
     ping(monitor)
-    problem_list, personalities = MonitorGenerator.gen(monitor)
+    personalities, problem_list = MonitorGenerator.gen(monitor)
 
     return render(request, '_monitor.html', {
         'monitor': monitor,
@@ -111,9 +111,8 @@ def monitor_edit(request: http.HttpRequest, monitor_id):
     })
 
 
+@auth_or_404
 def _edit_get_contest(request, monitor_id, contest_id):
-    if not request.user.is_authenticated:
-        raise http.Http404()
     monitor = get_object_or_404(models.Monitor, pk=monitor_id)
     return get_object_or_404(models.Contest, cf_contest=contest_id, monitor=monitor)
 
@@ -137,6 +136,23 @@ def edit_rename_monitor(request, monitor_id):
     monitor.human_name = new_name
     monitor.save(update_fields=['human_name'])
     return redirect('main:monitor_edit', monitor_id=monitor_id)
+
+
+@auth_or_404
+def _edit_blacklist_people(request, monitor_id, is_blacklisted):
+    monitor = get_object_or_404(models.Monitor, pk=monitor_id)
+    for p in monitor.personality_set.all():
+        p.is_blacklisted = is_blacklisted
+        p.save(update_fields=['is_blacklisted'])
+    return redirect('main:monitor_edit', monitor_id=monitor_id)
+
+
+def edit_add_all_people(request, monitor_id):
+    return _edit_blacklist_people(request, monitor_id, False)
+
+
+def edit_remove_all_people(request, monitor_id):
+    return _edit_blacklist_people(request, monitor_id, True)
 
 
 def edit_rename_contest(request, monitor_id, contest_id):
